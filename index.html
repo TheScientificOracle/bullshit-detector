@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Bullshit Detector</title>
+<style>
+  :root {
+    --bg:      #f5f2ed;
+    --card:    #ffffff;
+    --border:  #e8e5e0;
+    --text:    #111111;
+    --muted:   #999990;
+    --subtle:  #666660;
+    --truth:   #16a34a;
+    --cb:      #ea580c;
+    --rb:      #dc2626;
+    --radius:  10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-family: Georgia, serif;
+  }
+  #app {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+  }
+  .mono { font-family: 'Courier New', monospace; }
+
+  /* ── Masthead ── */
+  .masthead {
+    text-align: center;
+    padding: 32px 0 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .eyebrow {
+    font-family: 'Courier New', monospace;
+    font-size: 9.5px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .masthead h1 {
+    font-family: Georgia, serif;
+    font-size: 28px;
+    font-weight: bold;
+    letter-spacing: -0.5px;
+    color: var(--text);
+    cursor: default;
+  }
+  .masthead h1.clickable { cursor: pointer; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-bottom: 12px;
+  }
+  .card-label {
+    font-family: 'Courier New', monospace;
+    font-size: 9.5px;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  /* ── Buttons ── */
+  button { cursor: pointer; font-family: inherit; border: none; }
+  .btn-primary {
+    width: 100%; padding: 13px; background: #111; color: white;
+    border-radius: var(--radius); font-family: 'Courier New', monospace;
+    font-size: 13px; letter-spacing: 1px; border: none; cursor: pointer;
+  }
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-secondary {
+    width: 100%; padding: 13px; background: transparent; color: var(--subtle);
+    border-radius: var(--radius); font-family: 'Courier New', monospace;
+    font-size: 12px; letter-spacing: 0.5px; border: 1px solid var(--border);
+    cursor: pointer; margin-top: 8px;
+  }
+  .btn-back {
+    background: none; border: none; color: var(--muted);
+    font-family: 'Courier New', monospace; font-size: 11px;
+    letter-spacing: 0.5px; padding: 0; margin-top: 20px;
+    cursor: pointer;
+  }
+
+  /* ── URL Input ── */
+  .url-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .url-input {
+    flex: 1; font-family: Georgia, serif; font-size: 14px;
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 13px 14px; background: var(--card); color: var(--text);
+    outline: none;
+  }
+  .url-input:focus { border-color: #aaa; }
+  .detect-btn {
+    background: #111; color: white; border: none;
+    border-radius: var(--radius); padding: 13px 18px;
+    font-family: 'Courier New', monospace; font-size: 13px;
+    letter-spacing: 0.5px; cursor: pointer; flex-shrink: 0;
+  }
+  .detect-btn:hover { opacity: 0.88; }
+
+  /* ── Examples ── */
+  .examples-label {
+    font-family: 'Courier New', monospace; font-size: 10px;
+    color: var(--muted); letter-spacing: 0.5px; margin-bottom: 6px;
+  }
+  .example-chip {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 20px; padding: 6px 14px;
+    font-family: 'Courier New', monospace; font-size: 11px;
+    color: var(--subtle); cursor: pointer;
+  }
+  .example-chip:hover { border-color: #aaa; }
+
+  /* ── Score Explainer ── */
+  .explainer { margin-top: 32px; }
+  .explainer-label {
+    font-family: 'Courier New', monospace; font-size: 10px;
+    letter-spacing: 1.2px; color: var(--muted); margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+  .explainer-row { display: flex; gap: 12px; margin-bottom: 14px; }
+  .explainer-bar { width: 3px; border-radius: 2px; flex-shrink: 0; min-height: 40px; }
+  .explainer-title {
+    font-family: 'Courier New', monospace; font-size: 10px;
+    letter-spacing: 1.2px; font-weight: bold; margin-bottom: 3px;
+    text-transform: uppercase;
+  }
+  .explainer-desc { font-size: 12.5px; color: #777; line-height: 1.55; }
+
+  /* ── Spinner ── */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner {
+    width: 32px; height: 32px;
+    border: 2.5px solid var(--border); border-top-color: #333;
+    border-radius: 50%; animation: spin 0.8s linear infinite;
+    margin: 0 auto 20px;
+  }
+  .phase-text {
+    font-family: 'Courier New', monospace; font-size: 12px;
+    color: var(--muted); letter-spacing: 0.5px; text-align: center;
+  }
+  .analysing-wrap { text-align: center; padding: 40px 0; }
+
+  /* ── Blocked / format states ── */
+  .state-tag {
+    font-family: 'Courier New', monospace; font-size: 10px;
+    letter-spacing: 1px; text-transform: uppercase;
+    border-radius: 4px; padding: 3px 9px; display: inline-block;
+    margin-bottom: 12px; font-weight: bold;
+  }
+  .state-body { font-size: 14px; color: #444; line-height: 1.65; }
+  .state-body-sm { font-size: 13px; color: #888; line-height: 1.6; margin-top: 10px; }
+
+  /* ── Screenshot upload ── */
+  .upload-label {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    font-family: 'Courier New', monospace; font-size: 12px; color: var(--muted);
+    letter-spacing: 0.5px; border: 1px dashed #d8d0c6; border-radius: var(--radius);
+    padding: 12px 16px; cursor: pointer; width: 100%; margin-top: 20px;
+  }
+  .upload-label:hover { border-color: #aaa; }
+  .upload-preview { width: 100%; border-radius: var(--radius); border: 1px solid var(--border); display: block; margin-bottom: 10px; }
+  .upload-actions { display: flex; gap: 8px; }
+
+  /* ── Result: verdict ── */
+  .verdict-quote {
+    font-family: Georgia, serif; font-size: 16px; color: var(--text);
+    line-height: 1.6; font-style: italic;
+  }
+  .headline-quote {
+    font-family: Georgia, serif; font-size: 14px; font-style: italic;
+    color: #777; margin-bottom: 4px; line-height: 1.5;
+  }
+  .publication-tag {
+    font-family: 'Courier New', monospace; font-size: 10px;
+    color: var(--muted); letter-spacing: 1px; margin-bottom: 20px;
+  }
+
+  /* ── Score cards ── */
+  .score-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px 16px;
+    margin-bottom: 10px; cursor: pointer; user-select: none;
+  }
+  .score-card-head { display: flex; align-items: center; justify-content: space-between; }
+  .score-card-left { display: flex; align-items: center; gap: 10px; }
+  .score-type {
+    font-family: 'Courier New', monospace; font-size: 11px;
+    letter-spacing: 1.5px; font-weight: bold; text-transform: uppercase;
+  }
+  .score-band {
+    font-family: 'Courier New', monospace; font-size: 10px;
+    border-radius: 4px; padding: 2px 7px; font-weight: bold;
+    letter-spacing: 0.5px;
+  }
+  .score-right { display: flex; align-items: center; gap: 8px; }
+  .score-num { font-family: 'Courier New', monospace; font-size: 22px; font-weight: bold; }
+  .score-chevron {
+    font-family: 'Courier New', monospace; font-size: 11px; color: #bbb;
+    transition: transform 0.2s; display: inline-block;
+  }
+  .score-card-body { margin-top: 14px; }
+  .caveat-box {
+    border: 1px dashed #d8d0c6; border-radius: 6px; padding: 8px 12px;
+    margin-bottom: 12px;
+    background: repeating-linear-gradient(-45deg, transparent, transparent 5px, rgba(0,0,0,0.015) 5px, rgba(0,0,0,0.015) 10px);
+  }
+  .caveat-text {
+    font-family: 'Courier New', monospace; font-size: 10px;
+    color: #888; letter-spacing: 0.3px;
+  }
+  .reasoning-bullet { display: flex; gap: 10px; margin-bottom: 8px; padding-left: 10px; }
+  .reasoning-text { font-size: 13px; color: #555; line-height: 1.5; }
+  .truth-note {
+    font-family: 'Courier New', monospace; font-size: 9.5px;
+    color: #aaa; margin-top: 10px; line-height: 1.6; letter-spacing: 0.3px;
+  }
+
+  /* ── Banners ── */
+  .banner {
+    border-radius: 8px; padding: 8px 14px; margin-bottom: 14px;
+  }
+  .banner-demo {
+    background: #fffbeb; border: 1px solid #fcd34d;
+  }
+  .banner-demo p {
+    font-family: 'Courier New', monospace; font-size: 10px;
+    color: #92400e; letter-spacing: 0.5px;
+  }
+  .banner-screenshot {
+    background: #f8faff; border: 1px dashed #cbd5e1;
+  }
+  .banner-screenshot p {
+    font-family: 'Courier New', monospace; font-size: 10px;
+    color: #64748b; letter-spacing: 0.5px;
+  }
+  .banner-error { background: #fef2f2; border: 1px solid #fca5a5; }
+  .banner-error p { font-size: 13px; color: #dc2626; font-family: Georgia, serif; }
+
+  /* ── Error state ── */
+  .error-heading {
+    font-family: 'Courier New', monospace; font-size: 10px;
+    letter-spacing: 1.5px; color: var(--rb); margin-bottom: 12px;
+    text-align: center;
+  }
+  .error-body {
+    font-size: 14px; color: #666; line-height: 1.65; text-align: center; margin-bottom: 24px;
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+const EDGE_URL     = 'https://qpisyykqmivljpsqleul.supabase.co/functions/v1/bs-detect';
+const SUPABASE_ANON = 'sb_publishable_woWGWtBvw0FJJNaP7rC63A_y5ZSVBjp';
+
+// ─── URL / FORMAT DETECTION ───────────────────────────────────────────────────
+const PAYWALL_DOMAINS  = ['ft.com','wsj.com','thetimes.co.uk','economist.com','newyorker.com','theathletic.com','spectator.co.uk'];
+const BLOCKER_DOMAINS  = ['theguardian.com','telegraph.co.uk','nytimes.com','bloomberg.com','bbc.co.uk','bbc.com','x.com','twitter.com'];
+const FORMAT_CAN_PROCEED = ['opinion','press-release'];
+
+function detectAccess(url) {
+  try {
+    const domain = new URL(url).hostname.replace(/^www\./, '');
+    if (PAYWALL_DOMAINS.some(d => domain.endsWith(d))) return 'paywall';
+    if (BLOCKER_DOMAINS.some(d => domain.endsWith(d))) return 'blocker';
+    return null;
+  } catch { return null; }
+}
+
+function detectFormat(url) {
+  const u = url.toLowerCase();
+  if (/x\.com|twitter\.com|instagram\.com\/p\/|facebook\.com\/|linkedin\.com\/posts\/|reddit\.com\/r\/|threads\.net|bsky\.app/i.test(u)) return 'social';
+  if (/youtube\.com|youtu\.be|tiktok\.com|vimeo\.com/i.test(u)) return 'video';
+  if (/\/live\//i.test(u)) return 'live-blog';
+  if (/\/opinion\/|\/commentisfree\/|\/commentary\/|\/comment\/|\/columns\//i.test(u)) return 'opinion';
+  if (/\/press-release\/|\/newsroom\/|\/press\/|\/news-release\//i.test(u)) return 'press-release';
+  return null;
+}
+
+function isHashUrl(url) {
+  try { return /\/[a-z0-9]{8,12}$/i.test(new URL(url).pathname); } catch { return false; }
+}
+
+const FORMAT_LABELS = {
+  'live-blog':     'Live blog',
+  'opinion':       'Opinion / column',
+  'press-release': 'Press release',
+  'social':        'Social media post',
+  'video':         'Video content',
+};
+const FORMAT_MESSAGES = {
+  'live-blog':     "Live blogs update continuously — there's no fixed article to score against a headline. This format breaks the model.",
+  'social':        "Social posts have no headline-to-body structure to analyse. Use the screenshot option below — ragebait scoring is still reliable.",
+  'video':         "Video content can't be read as text. Screenshot a thumbnail or description and upload it below.",
+  'opinion':       "Opinion and columns are caveated content — the author is explicitly giving a view. Scoring proceeds with that noted.",
+  'press-release': "Press releases are by definition one-sided communications. Scoring proceeds, though ragebait signals are typically absent.",
+};
+
+// ─── SCORE BAND HELPERS ───────────────────────────────────────────────────────
+function getTruthBand(s) {
+  if (s >= 80) return { label: 'Well-sourced',    color: '#16a34a' };
+  if (s >= 60) return { label: 'Read critically', color: '#ca8a04' };
+  if (s >= 40) return { label: 'Thin',            color: '#ea580c' };
+  if (s >= 20) return { label: 'Weak',            color: '#dc2626' };
+  return              { label: 'No basis',        color: '#7f1d1d' };
+}
+function getClickbaitBand(s) {
+  if (s <= 20) return { label: 'Honest',     color: '#16a34a' };
+  if (s <= 40) return { label: 'Mild',       color: '#ca8a04' };
+  if (s <= 60) return { label: 'Notable',    color: '#ea580c' };
+  if (s <= 80) return { label: 'High',       color: '#dc2626' };
+  return              { label: 'Egregious',  color: '#7f1d1d' };
+}
+function getRagebaitBand(s) {
+  if (s <= 20) return { label: 'Clean',    color: '#16a34a' };
+  if (s <= 40) return { label: 'Mild',     color: '#ca8a04' };
+  if (s <= 60) return { label: 'Notable',  color: '#ea580c' };
+  if (s <= 80) return { label: 'High',     color: '#dc2626' };
+  return              { label: 'Weapon',   color: '#7f1d1d' };
+}
+function getBand(type, score) {
+  if (type === 'truth')     return getTruthBand(score);
+  if (type === 'clickbait') return getClickbaitBand(score);
+  return getRagebaitBand(score);
+}
+
+// ─── RADAR CHART ──────────────────────────────────────────────────────────────
+function renderRadar(scores, screenshotMode) {
+  const cx = 150, cy = 135, r = 90;
+  const PI = Math.PI;
+  const TRUTH_A = -PI / 2;
+  const CB_A    = -PI / 2 + (2 * PI) / 3;
+  const RB_A    = -PI / 2 + (4 * PI) / 3;
+
+  function pt(a, radius) {
+    const rad = (radius === undefined) ? r : radius;
+    return { x: cx + rad * Math.cos(a), y: cy + rad * Math.sin(a) };
+  }
+  function clamp(v) { return Math.max(0, Math.min(100, v || 0)); }
+
+  const truthAxis = pt(TRUTH_A), cbAxis = pt(CB_A), rbAxis = pt(RB_A);
+  const dT  = pt(TRUTH_A, r * clamp(scores.truth)     / 100);
+  const dCB = pt(CB_A,    r * clamp(scores.clickbait)  / 100);
+  const dRB = pt(RB_A,    r * clamp(scores.ragebait)   / 100);
+
+  function gridPoly(pct) {
+    const t = pt(TRUTH_A, r * pct / 100);
+    const c = pt(CB_A,    r * pct / 100);
+    const b = pt(RB_A,    r * pct / 100);
+    return `${t.x},${t.y} ${c.x},${c.y} ${b.x},${b.y}`;
+  }
+
+  const rings = [20,40,60,80,100].map((p, i) =>
+    `<polygon points="${gridPoly(p)}" fill="${i%2===0 ? 'rgba(0,0,0,0.025)' : 'none'}" stroke="#d8d0c6" stroke-width="0.75" stroke-dasharray="3,2.5"/>`
+  ).join('');
+
+  const axes = `
+    <line x1="${cx}" y1="${cy}" x2="${truthAxis.x}" y2="${truthAxis.y}" stroke="#d8d0c6" stroke-width="1" stroke-dasharray="3,2.5"/>
+    <line x1="${cx}" y1="${cy}" x2="${cbAxis.x}"    y2="${cbAxis.y}"    stroke="#d8d0c6" stroke-width="1" stroke-dasharray="3,2.5"/>
+    <line x1="${cx}" y1="${cy}" x2="${rbAxis.x}"    y2="${rbAxis.y}"    stroke="#d8d0c6" stroke-width="1" stroke-dasharray="3,2.5"/>`;
+
+  const tLabel  = screenshotMode ? `~${scores.truth}`     : scores.truth;
+  const cbLabel = screenshotMode ? `~${scores.clickbait}` : scores.clickbait;
+
+  const tDash  = screenshotMode ? `<circle cx="${dT.x}"  cy="${dT.y}"  r="13" fill="none" stroke="#16a34a" stroke-width="1" stroke-dasharray="2.5,2" opacity="0.6"/>` : '';
+  const cbDash = screenshotMode ? `<circle cx="${dCB.x}" cy="${dCB.y}" r="13" fill="none" stroke="#ea580c" stroke-width="1" stroke-dasharray="2.5,2" opacity="0.6"/>` : '';
+  const legend = screenshotMode ? `<text x="150" y="278" text-anchor="middle" font-family="'Courier New',monospace" font-size="7.5" fill="#999" letter-spacing="0.8">~ = INDICATIVE · SCREENSHOT MODE</text>` : '';
+
+  return `<svg viewBox="0 0 300 285" style="width:100%;max-width:300px;display:block;margin:0 auto">
+    ${rings}${axes}
+    <polygon points="${dT.x},${dT.y} ${dCB.x},${dCB.y} ${dRB.x},${dRB.y}" fill="rgba(30,20,10,0.10)" stroke="#444" stroke-width="2" stroke-linejoin="round"/>
+    ${tDash}<circle cx="${dT.x}"  cy="${dT.y}"  r="7" fill="white" stroke="#16a34a" stroke-width="2"/><circle cx="${dT.x}"  cy="${dT.y}"  r="3" fill="#16a34a"/>
+    ${cbDash}<circle cx="${dCB.x}" cy="${dCB.y}" r="7" fill="white" stroke="#ea580c" stroke-width="2"/><circle cx="${dCB.x}" cy="${dCB.y}" r="3" fill="#ea580c"/>
+    <circle cx="${dRB.x}" cy="${dRB.y}" r="7" fill="white" stroke="#dc2626" stroke-width="2"/><circle cx="${dRB.x}" cy="${dRB.y}" r="3" fill="#dc2626"/>
+    <text x="${dT.x}"      y="${dT.y - 16}"  text-anchor="middle" font-family="'Courier New',monospace" font-size="11.5" fill="#16a34a" font-weight="bold">${tLabel}</text>
+    <text x="${dCB.x + 15}" y="${dCB.y + 4}"  text-anchor="start"  font-family="'Courier New',monospace" font-size="11.5" fill="#ea580c" font-weight="bold">${cbLabel}</text>
+    <text x="${dRB.x - 15}" y="${dRB.y + 4}"  text-anchor="end"    font-family="'Courier New',monospace" font-size="11.5" fill="#dc2626" font-weight="bold">${scores.ragebait}</text>
+    <text x="${truthAxis.x}"  y="${truthAxis.y - 14}" text-anchor="middle" font-family="'Courier New',monospace" font-size="9.5" fill="#16a34a" font-weight="bold" letter-spacing="1.2">TRUTH</text>
+    <text x="${cbAxis.x + 6}" y="${cbAxis.y + 5}"    text-anchor="start"  font-family="'Courier New',monospace" font-size="9.5" fill="#ea580c" font-weight="bold" letter-spacing="1.2">CLICKBAIT</text>
+    <text x="${rbAxis.x - 6}" y="${rbAxis.y + 5}"    text-anchor="end"    font-family="'Courier New',monospace" font-size="9.5" fill="#dc2626" font-weight="bold" letter-spacing="1.2">RAGEBAIT</text>
+    ${legend}
+  </svg>`;
+}
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+const state = {
+  screen:         'input',   // input | analysing | screenshot-analysing | access | format | combined | result | error
+  url:            '',
+  detectedFormat: null,
+  detectedAccess: null,
+  result:         null,
+  phaseIndex:     0,
+  isDemo:         false,
+  errorMsg:       '',
+  // upload preview
+  previewSrc:     null,
+  previewBase64:  null,
+  previewType:    null,
+  // score card open state
+  openCard:       null,     // 'truth' | 'clickbait' | 'ragebait'
+};
+
+let phaseTimer = null;
+
+function setState(patch) {
+  Object.assign(state, patch);
+  render();
+}
+
+// ─── PHASE CYCLING ────────────────────────────────────────────────────────────
+const URL_PHASES        = ['Fetching article…','Reading content…','Comparing headline to body…','Checking source quality…','Scoring claims…','Writing verdict…'];
+const SCREENSHOT_PHASES = ['Reading screenshot…','Identifying publication…','Analysing content…','Scoring ragebait signals…','Writing verdict…'];
+
+function startPhases(isScreenshot) {
+  clearInterval(phaseTimer);
+  const phases = isScreenshot ? SCREENSHOT_PHASES : URL_PHASES;
+  state.phaseIndex = 0;
+  phaseTimer = setInterval(() => {
+    state.phaseIndex = (state.phaseIndex + 1) % phases.length;
+    const el = document.getElementById('phase-text');
+    if (el) el.textContent = phases[state.phaseIndex];
+    else clearInterval(phaseTimer);
+  }, 900);
+  return phases[0];
+}
+
+function stopPhases() { clearInterval(phaseTimer); phaseTimer = null; }
+
+// ─── DEMO RESULT ──────────────────────────────────────────────────────────────
+const DEMO_RESULT = {
+  headline:    'The One Skill That Could Make You More Hireable Than An MBA Graduate',
+  publication: 'Fortune',
+  scores:      { truth: 52, clickbait: 58, ragebait: 8 },
+  verdict:     "A LinkedIn post in a trench coat. Fortune stapled three CEO quotes on it and called it journalism.",
+  reasoning: {
+    truth:     ['Three named CEOs cited — relevant credentials, minimal deduction', 'Anecdotal evidence presented as universal career truth', 'No studies or data cited to support the central claim'],
+    clickbait: ['"One skill" formula in headline', 'Body delivers less than headline implies — CEOs quoted but no systematic evidence'],
+    ragebait:  ['Mild anxiety framing around employability', 'Not designed to provoke outrage — informational in tone'],
+  },
+  screenshot_caveats: null,
+  screenshotMode: false,
+};
+
+// ─── API CALL ─────────────────────────────────────────────────────────────────
+async function callEdge(body) {
+  const res = await fetch(EDGE_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type':  'application/json',
+      'Authorization': `Bearer ${SUPABASE_ANON}`,
+      'apikey':         SUPABASE_ANON,
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+  return data;
+}
+
+async function analyseUrl(url) {
+  const firstPhase = startPhases(false);
+  setState({ screen: 'analysing', phaseIndex: 0, errorMsg: '' });
+  try {
+    const result = await callEdge({ type: 'url', url });
+    stopPhases();
+    setState({ screen: 'result', result, isDemo: false, openCard: null });
+  } catch (err) {
+    stopPhases();
+    console.error(err);
+    // Fallback to demo
+    setState({ screen: 'result', result: DEMO_RESULT, isDemo: true, openCard: null });
+  }
+}
+
+async function analyseScreenshot(base64, mediaType) {
+  startPhases(true);
+  setState({ screen: 'screenshot-analysing', phaseIndex: 0, errorMsg: '', previewSrc: null });
+  try {
+    const result = await callEdge({ type: 'screenshot', base64, mediaType });
+    stopPhases();
+    setState({ screen: 'result', result, isDemo: false, openCard: null });
+  } catch (err) {
+    stopPhases();
+    console.error(err);
+    setState({ screen: 'error', errorMsg: err.message });
+  }
+}
+
+// ─── HANDLERS ─────────────────────────────────────────────────────────────────
+function handleSubmit() {
+  const url = state.url.trim();
+  if (!url) return;
+
+  // Format detection BEFORE access check (Gap 1 fix)
+  const fmt = detectFormat(url);
+  const acc = detectAccess(url);
+
+  if (fmt && !FORMAT_CAN_PROCEED.includes(fmt)) {
+    setState({ screen: acc ? 'combined' : 'format', detectedFormat: fmt, detectedAccess: acc, previewSrc: null });
+    return;
+  }
+  if (acc && !fmt) {
+    setState({ screen: 'access', detectedFormat: null, detectedAccess: acc, previewSrc: null });
+    return;
+  }
+  if (acc && fmt && FORMAT_CAN_PROCEED.includes(fmt)) {
+    setState({ screen: 'combined', detectedFormat: fmt, detectedAccess: acc, previewSrc: null });
+    return;
+  }
+
+  analyseUrl(url);
+}
+
+function resetToInput() {
+  stopPhases();
+  setState({ screen: 'input', result: null, detectedFormat: null, detectedAccess: null, errorMsg: '', previewSrc: null, previewBase64: null, openCard: null, isDemo: false });
+}
+
+function toggleCard(type) {
+  setState({ openCard: state.openCard === type ? null : type });
+}
+
+function handleFileChange(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const dataUrl = e.target.result;
+    const base64  = dataUrl.split(',')[1];
+    const mType   = file.type || 'image/jpeg';
+    setState({ previewSrc: dataUrl, previewBase64: base64, previewType: mType });
+  };
+  reader.readAsDataURL(file);
+}
+
+function confirmScreenshot() {
+  if (state.previewBase64) analyseScreenshot(state.previewBase64, state.previewType || 'image/jpeg');
+}
+
+function clearScreenshot() {
+  setState({ previewSrc: null, previewBase64: null, previewType: null });
+}
+
+// ─── RENDER PIECES ────────────────────────────────────────────────────────────
+function renderMasthead(clickable) {
+  return `<div class="masthead">
+    <p class="eyebrow">Content Integrity · Est. 2026</p>
+    <h1 class="${clickable ? 'clickable' : ''}" onclick="${clickable ? 'resetToInput()' : ''}"
+        style="${clickable ? '' : 'cursor:default'}">The Bullshit Detector</h1>
+  </div>`;
+}
+
+function renderUpload(label) {
+  if (state.previewSrc) {
+    return `<img src="${state.previewSrc}" class="upload-preview" alt="Screenshot preview"/>
+      <div class="upload-actions">
+        <button class="btn-primary" onclick="confirmScreenshot()" style="margin-top:0">ANALYSE SCREENSHOT</button>
+        <button class="btn-secondary" onclick="clearScreenshot()" style="margin-top:0;width:auto;padding:0 16px">CLEAR</button>
+      </div>`;
+  }
+  return `<label class="upload-label">
+    <input type="file" accept="image/*" onchange="handleFileChange(this)" style="display:none"/>
+    📷 ${label || 'Upload a screenshot instead'}
+  </label>`;
+}
+
+function renderScoreCard(type, result) {
+  const score   = result.scores[type];
+  const isOpen  = state.openCard === type;
+  const band    = getBand(type, score);
+  const color   = type === 'truth' ? '#16a34a' : type === 'clickbait' ? '#ea580c' : '#dc2626';
+  const reasons = (result.reasoning && result.reasoning[type]) || [];
+  const caveat  = result.screenshot_caveats && result.screenshot_caveats[type];
+  const isScreenshot = result.screenshotMode;
+  const scoreLabel = (isScreenshot && type !== 'ragebait') ? `~${score}` : `${score}`;
+
+  let body = '';
+  if (isOpen) {
+    const caveatHtml = (isScreenshot && caveat)
+      ? `<div class="caveat-box"><p class="caveat-text">⚠ ${caveat}</p></div>` : '';
+    const bullets = reasons.map(r =>
+      `<div class="reasoning-bullet" style="border-left:2px solid ${color}40">
+        <p class="reasoning-text">${r}</p>
+      </div>`
+    ).join('');
+    const note = type === 'truth'
+      ? `<p class="truth-note">NOTE: Truth scoring reflects journalistic sourcing quality — not live fact-checking against external databases.</p>` : '';
+    body = `<div class="score-card-body">${caveatHtml}${bullets}${note}</div>`;
+  }
+
+  return `<div class="score-card" onclick="toggleCard('${type}')">
+    <div class="score-card-head">
+      <div class="score-card-left">
+        <span class="score-type" style="color:${color}">${type}</span>
+        <span class="score-band" style="background:${band.color}18;color:${band.color};border:1px solid ${band.color}40">${band.label}</span>
+      </div>
+      <div class="score-right">
+        <span class="score-num" style="color:${color}">${scoreLabel}</span>
+        <span class="score-chevron" style="transform:${isOpen ? 'rotate(180deg)' : 'none'}">▾</span>
+      </div>
+    </div>
+    ${body}
+  </div>`;
+}
+
+// ─── SCREENS ──────────────────────────────────────────────────────────────────
+function screenInput() {
+  const errBanner = state.errorMsg
+    ? `<div class="banner banner-error" style="margin-bottom:16px"><p>${state.errorMsg}</p></div>` : '';
+
+  return `${errBanner}
+  <div class="url-row">
+    <input class="url-input" type="url" placeholder="Paste a URL to analyse…" value="${state.url.replace(/"/g, '&quot;')}"
+      oninput="state.url=this.value" onkeydown="if(event.key==='Enter')handleSubmit()"/>
+    <button class="detect-btn" onclick="handleSubmit()">DETECT</button>
+  </div>
+  <p class="examples-label">TRY AN EXAMPLE:</p>
+  <button class="example-chip" onclick="setState({screen:'result',result:DEMO_RESULT,isDemo:true,openCard:null})">Fortune · CEO hiring article</button>
+  <div class="explainer">
+    <p class="explainer-label">Three independent scores</p>
+    ${[
+      { color: '#16a34a', key: 'TRUTH',     desc: 'Evidentiary quality. How well-sourced are the claims? Starts at 100, deducted based on sourcing signals.' },
+      { color: '#ea580c', key: 'CLICKBAIT', desc: 'Headline vs. body mismatch. Does the article deliver what the headline promises?' },
+      { color: '#dc2626', key: 'RAGEBAIT',  desc: 'Emotional engineering. Is this content designed to provoke outrage, even if factually accurate?' },
+    ].map(e => `<div class="explainer-row">
+      <div class="explainer-bar" style="background:${e.color}"></div>
+      <div>
+        <p class="explainer-title" style="color:${e.color}">${e.key}</p>
+        <p class="explainer-desc">${e.desc}</p>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function screenAnalysing(isScreenshot) {
+  const phases = isScreenshot ? SCREENSHOT_PHASES : URL_PHASES;
+  return `<div class="analysing-wrap">
+    <div class="spinner"></div>
+    <p class="phase-text" id="phase-text">${phases[state.phaseIndex]}</p>
+  </div>`;
+}
+
+function screenAccess() {
+  const isPaywall = state.detectedAccess === 'paywall';
+  const hashNote  = (!isPaywall && isHashUrl(state.url))
+    ? `<p class="state-body-sm">This URL uses a hash-based identifier — there's nothing in the address to work with either. A screenshot is the only option.</p>` : '';
+  return `<div class="card">
+    <span class="state-tag" style="background:${isPaywall?'#fef2f2':'#fff7ed'};color:${isPaywall?'#dc2626':'#ea580c'};border:1px solid ${isPaywall?'#fca5a5':'#fed7aa'}">
+      ${isPaywall ? '🔒 Subscription paywall' : '🚧 Automated access blocked'}
+    </span>
+    <p class="state-body">${isPaywall
+      ? "This publication requires a subscription. Automated reading isn't possible — the article is behind a paywall."
+      : "This publication blocks automated access. The content exists but requires a browser session to read."}</p>
+    ${hashNote}
+  </div>
+  <p class="explainer-label" style="margin-top:4px;margin-bottom:8px">SCREENSHOT FALLBACK</p>
+  ${renderUpload('Screenshot the article and upload it')}
+  <br/><button class="btn-back" onclick="resetToInput()">← Try a different URL</button>`;
+}
+
+function screenFormat() {
+  const fmt     = state.detectedFormat;
+  const canGo   = FORMAT_CAN_PROCEED.includes(fmt);
+  const procBtn = canGo
+    ? `<button class="btn-primary" style="margin-top:16px" onclick="analyseUrl(state.url)">ANALYSE ANYWAY</button>` : '';
+  const upload  = !canGo ? `<p class="explainer-label" style="margin-top:16px;margin-bottom:8px">SCREENSHOT FALLBACK</p>${renderUpload('Screenshot the content and upload it')}` : '';
+  return `<div class="card">
+    <span class="state-tag" style="background:#fff7ed;color:#ea580c;border:1px solid #fed7aa">⚠ ${FORMAT_LABELS[fmt] || 'Unsupported format'}</span>
+    <p class="state-body">${FORMAT_MESSAGES[fmt] || ''}</p>
+    ${procBtn}
+  </div>
+  ${upload}
+  <button class="btn-back" onclick="resetToInput()">← Try a different URL</button>`;
+}
+
+function screenCombined() {
+  const fmt = state.detectedFormat;
+  const acc = state.detectedAccess;
+  const tags = [
+    fmt ? `<span class="state-tag" style="background:#fff7ed;color:#ea580c;border:1px solid #fed7aa">⚠ ${FORMAT_LABELS[fmt]}</span>` : '',
+    acc ? `<span class="state-tag" style="background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;margin-left:6px">${acc==='paywall'?'🔒 Paywall':'🚧 Blocked'}</span>` : '',
+  ].join('');
+  return `<div class="card">
+    <div style="margin-bottom:12px">${tags}</div>
+    <p class="state-body">${FORMAT_MESSAGES[fmt] || ''}</p>
+    <p class="state-body-sm">${acc==='paywall'
+      ? 'Additionally, this site is paywalled — automated reading is blocked regardless.'
+      : 'Additionally, this publisher blocks automated access.'}</p>
+  </div>
+  <p class="explainer-label" style="margin-top:4px;margin-bottom:8px">SCREENSHOT FALLBACK</p>
+  ${renderUpload('Screenshot the article and upload it')}
+  <button class="btn-back" onclick="resetToInput()">← Try a different URL</button>`;
+}
+
+function screenResult() {
+  const r = state.result;
+  if (!r) return '';
+
+  const demoBanner = state.isDemo
+    ? `<div class="banner banner-demo"><p>DEMO RESULT — deploy the edge function and paste a real URL for live analysis</p></div>` : '';
+  const ssBanner = r.screenshotMode
+    ? `<div class="banner banner-screenshot"><p>SCREENSHOT MODE — Truth and Clickbait are indicative (~). Ragebait is most reliable.</p></div>` : '';
+  const headline = r.headline ? `<p class="headline-quote">"${r.headline}"</p>` : '';
+  const pub      = r.publication ? `<p class="publication-tag">${r.publication.toUpperCase()}</p>` : '';
+
+  return `${demoBanner}${ssBanner}
+  ${headline}${pub}
+  <div class="card">
+    <p class="card-label">Verdict</p>
+    <p class="verdict-quote">${r.verdict}</p>
+  </div>
+  <div class="card" style="padding:16px">
+    <p class="card-label" style="text-align:center;margin-bottom:10px">Content Fingerprint</p>
+    ${renderRadar(r.scores, r.screenshotMode)}
+  </div>
+  <p class="card-label" style="margin-bottom:10px">Breakdown — tap to expand</p>
+  ${renderScoreCard('truth',     r)}
+  ${renderScoreCard('clickbait', r)}
+  ${renderScoreCard('ragebait',  r)}
+  <button class="btn-secondary" onclick="resetToInput()">ANALYSE ANOTHER</button>`;
+}
+
+function screenError() {
+  return `<p class="error-heading">ANALYSIS FAILED</p>
+  <p class="error-body">The screenshot couldn't be read clearly enough to score. Try a cleaner screenshot — the full article view works best.</p>
+  <button class="btn-primary" onclick="resetToInput()">TRY AGAIN</button>`;
+}
+
+// ─── MAIN RENDER ──────────────────────────────────────────────────────────────
+function render() {
+  const app = document.getElementById('app');
+  const s = state.screen;
+  const clickableMast = s !== 'input';
+
+  let content = '';
+  if      (s === 'input')                content = screenInput();
+  else if (s === 'analysing')            content = screenAnalysing(false);
+  else if (s === 'screenshot-analysing') content = screenAnalysing(true);
+  else if (s === 'access')               content = screenAccess();
+  else if (s === 'format')               content = screenFormat();
+  else if (s === 'combined')             content = screenCombined();
+  else if (s === 'result')               content = screenResult();
+  else if (s === 'error')                content = screenError();
+
+  app.innerHTML = renderMasthead(clickableMast) + content;
+}
+
+// ─── BOOT ─────────────────────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
