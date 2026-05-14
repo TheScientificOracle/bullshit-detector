@@ -87,6 +87,7 @@
     font-size: 12px; letter-spacing: 0.5px; border: 1px solid var(--border);
     cursor: pointer; margin-top: 8px;
   }
+  .btn-secondary:hover { border-color: #aaa; }
   .btn-back {
     background: none; border: none; color: var(--muted);
     font-family: 'Courier New', monospace; font-size: 11px;
@@ -124,8 +125,21 @@
   }
   .example-chip:hover { border-color: #aaa; }
 
+  /* ── OR divider ── */
+  .or-divider {
+    display: flex; align-items: center; gap: 12px;
+    margin: 18px 0 14px;
+  }
+  .or-divider::before, .or-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+  .or-text {
+    font-family: 'Courier New', monospace; font-size: 9.5px;
+    letter-spacing: 2px; color: var(--muted);
+  }
+
   /* ── Score Explainer ── */
-  .explainer { margin-top: 32px; }
+  .explainer { margin-top: 28px; }
   .explainer-label {
     font-family: 'Courier New', monospace; font-size: 10px;
     letter-spacing: 1.2px; color: var(--muted); margin-bottom: 12px;
@@ -164,16 +178,48 @@
   .state-body { font-size: 14px; color: #444; line-height: 1.65; }
   .state-body-sm { font-size: 13px; color: #888; line-height: 1.6; margin-top: 10px; }
 
-  /* ── Screenshot upload ── */
+  /* ── Screenshot upload zone ── */
   .upload-label {
     display: flex; align-items: center; justify-content: center; gap: 8px;
     font-family: 'Courier New', monospace; font-size: 12px; color: var(--muted);
     letter-spacing: 0.5px; border: 1px dashed #d8d0c6; border-radius: var(--radius);
-    padding: 12px 16px; cursor: pointer; width: 100%; margin-top: 20px;
+    padding: 14px 16px; cursor: pointer; width: 100%;
   }
-  .upload-label:hover { border-color: #aaa; }
-  .upload-preview { width: 100%; border-radius: var(--radius); border: 1px solid var(--border); display: block; margin-bottom: 10px; }
-  .upload-actions { display: flex; gap: 8px; }
+  .upload-label:hover { border-color: #aaa; color: var(--subtle); }
+
+  /* ── Thumbnail strip ── */
+  .thumb-strip {
+    display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px;
+    margin-bottom: 10px; scrollbar-width: thin;
+  }
+  .thumb-item {
+    flex-shrink: 0; position: relative;
+    height: 88px; border-radius: 7px;
+    border: 1px solid var(--border); overflow: hidden;
+  }
+  .thumb-item img {
+    height: 88px; width: auto; display: block;
+  }
+  .thumb-remove {
+    position: absolute; top: 3px; right: 3px;
+    background: rgba(0,0,0,0.65); color: white; border: none;
+    border-radius: 50%; width: 20px; height: 20px;
+    font-size: 13px; cursor: pointer; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0;
+  }
+  .thumb-add {
+    flex-shrink: 0; height: 88px; width: 60px;
+    border: 1px dashed #d8d0c6; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--muted); font-size: 22px;
+    font-family: 'Courier New', monospace;
+  }
+  .thumb-add:hover { border-color: #aaa; color: var(--subtle); }
+  .thumb-count {
+    font-family: 'Courier New', monospace; font-size: 10px;
+    color: var(--muted); letter-spacing: 0.5px; margin-bottom: 8px;
+  }
 
   /* ── Result: verdict ── */
   .verdict-quote {
@@ -228,6 +274,17 @@
     font-family: 'Courier New', monospace; font-size: 9.5px;
     color: #aaa; margin-top: 10px; line-height: 1.6; letter-spacing: 0.3px;
   }
+
+  /* ── Share button ── */
+  .share-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 12px; background: transparent; color: var(--subtle);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    font-family: 'Courier New', monospace; font-size: 12px; letter-spacing: 0.5px;
+    cursor: pointer; margin-bottom: 8px;
+  }
+  .share-btn:hover { border-color: #aaa; }
+  .share-btn.copied { border-color: #16a34a; color: #16a34a; }
 
   /* ── Banners ── */
   .banner {
@@ -408,12 +465,12 @@ const state = {
   phaseIndex:     0,
   isDemo:         false,
   errorMsg:       '',
-  // upload preview
-  previewSrc:     null,
-  previewBase64:  null,
-  previewType:    null,
+  // multiple screenshot uploads
+  uploadedImages: [],        // [{src, base64, mType}]
   // score card open state
-  openCard:       null,     // 'truth' | 'clickbait' | 'ragebait'
+  openCard:       null,      // 'truth' | 'clickbait' | 'ragebait'
+  // share feedback
+  shareCopied:    false,
 };
 
 let phaseTimer = null;
@@ -425,7 +482,7 @@ function setState(patch) {
 
 // ─── PHASE CYCLING ────────────────────────────────────────────────────────────
 const URL_PHASES        = ['Fetching article…','Reading content…','Comparing headline to body…','Checking source quality…','Scoring claims…','Writing verdict…'];
-const SCREENSHOT_PHASES = ['Reading screenshot…','Identifying publication…','Analysing content…','Scoring ragebait signals…','Writing verdict…'];
+const SCREENSHOT_PHASES = ['Reading screenshots…','Identifying publication…','Analysing content…','Scoring ragebait signals…','Writing verdict…'];
 
 function startPhases(isScreenshot) {
   clearInterval(phaseTimer);
@@ -457,6 +514,28 @@ const DEMO_RESULT = {
   screenshotMode: false,
 };
 
+// ─── RESULT HASH (shareable URLs) ────────────────────────────────────────────
+function encodeResult(result) {
+  try {
+    return btoa(unescape(encodeURIComponent(JSON.stringify(result))));
+  } catch { return null; }
+}
+
+function decodeResult(hash) {
+  try {
+    return JSON.parse(decodeURIComponent(escape(atob(hash))));
+  } catch { return null; }
+}
+
+function setResultHash(result) {
+  const encoded = encodeResult(result);
+  if (encoded) history.replaceState(null, '', '#r=' + encoded);
+}
+
+function clearHash() {
+  history.replaceState(null, '', location.pathname + location.search);
+}
+
 // ─── API CALL ─────────────────────────────────────────────────────────────────
 async function callEdge(body) {
   const res = await fetch(EDGE_URL, {
@@ -474,26 +553,33 @@ async function callEdge(body) {
 }
 
 async function analyseUrl(url) {
-  const firstPhase = startPhases(false);
-  setState({ screen: 'analysing', phaseIndex: 0, errorMsg: '' });
+  startPhases(false);
+  setState({ screen: 'analysing', phaseIndex: 0, errorMsg: '', uploadedImages: [] });
   try {
     const result = await callEdge({ type: 'url', url });
     stopPhases();
+    setResultHash(result);
     setState({ screen: 'result', result, isDemo: false, openCard: null });
   } catch (err) {
     stopPhases();
     console.error(err);
     // Fallback to demo
+    setResultHash(DEMO_RESULT);
     setState({ screen: 'result', result: DEMO_RESULT, isDemo: true, openCard: null });
   }
 }
 
-async function analyseScreenshot(base64, mediaType) {
+async function analyseScreenshots(images) {
+  // images: [{src, base64, mType}]
   startPhases(true);
-  setState({ screen: 'screenshot-analysing', phaseIndex: 0, errorMsg: '', previewSrc: null });
+  setState({ screen: 'screenshot-analysing', phaseIndex: 0, errorMsg: '' });
   try {
-    const result = await callEdge({ type: 'screenshot', base64, mediaType });
+    const result = await callEdge({
+      type: 'screenshot',
+      images: images.map(img => ({ base64: img.base64, mediaType: img.mType || 'image/jpeg' })),
+    });
     stopPhases();
+    setResultHash(result);
     setState({ screen: 'result', result, isDemo: false, openCard: null });
   } catch (err) {
     stopPhases();
@@ -505,22 +591,26 @@ async function analyseScreenshot(base64, mediaType) {
 // ─── HANDLERS ─────────────────────────────────────────────────────────────────
 function handleSubmit() {
   const url = state.url.trim();
-  if (!url) return;
+  if (!url) {
+    // If no URL but we have screenshots, run screenshot analysis
+    if (state.uploadedImages.length > 0) { confirmScreenshots(); return; }
+    return;
+  }
 
   // Format detection BEFORE access check (Gap 1 fix)
   const fmt = detectFormat(url);
   const acc = detectAccess(url);
 
   if (fmt && !FORMAT_CAN_PROCEED.includes(fmt)) {
-    setState({ screen: acc ? 'combined' : 'format', detectedFormat: fmt, detectedAccess: acc, previewSrc: null });
+    setState({ screen: acc ? 'combined' : 'format', detectedFormat: fmt, detectedAccess: acc });
     return;
   }
   if (acc && !fmt) {
-    setState({ screen: 'access', detectedFormat: null, detectedAccess: acc, previewSrc: null });
+    setState({ screen: 'access', detectedFormat: null, detectedAccess: acc });
     return;
   }
   if (acc && fmt && FORMAT_CAN_PROCEED.includes(fmt)) {
-    setState({ screen: 'combined', detectedFormat: fmt, detectedAccess: acc, previewSrc: null });
+    setState({ screen: 'combined', detectedFormat: fmt, detectedAccess: acc });
     return;
   }
 
@@ -529,32 +619,66 @@ function handleSubmit() {
 
 function resetToInput() {
   stopPhases();
-  setState({ screen: 'input', result: null, detectedFormat: null, detectedAccess: null, errorMsg: '', previewSrc: null, previewBase64: null, openCard: null, isDemo: false });
+  clearHash();
+  setState({ screen: 'input', result: null, detectedFormat: null, detectedAccess: null, errorMsg: '', uploadedImages: [], openCard: null, isDemo: false, shareCopied: false });
 }
 
 function toggleCard(type) {
   setState({ openCard: state.openCard === type ? null : type });
 }
 
-function handleFileChange(input) {
-  const file = input.files && input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const dataUrl = e.target.result;
-    const base64  = dataUrl.split(',')[1];
-    const mType   = file.type || 'image/jpeg';
-    setState({ previewSrc: dataUrl, previewBase64: base64, previewType: mType });
-  };
-  reader.readAsDataURL(file);
+// ── File upload handlers ──
+function handleFileAdd(input) {
+  const files = Array.from(input.files || []);
+  if (!files.length) return;
+
+  let pending = files.length;
+  files.forEach(file => {
+    if (state.uploadedImages.length >= 8) { pending--; return; } // max 8
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
+      const base64  = dataUrl.split(',')[1];
+      const mType   = file.type || 'image/jpeg';
+      state.uploadedImages = [...state.uploadedImages, { src: dataUrl, base64, mType }];
+      pending--;
+      if (pending <= 0) render();
+    };
+    reader.readAsDataURL(file);
+  });
+  // Reset the input so the same file can be re-added if needed
+  input.value = '';
 }
 
-function confirmScreenshot() {
-  if (state.previewBase64) analyseScreenshot(state.previewBase64, state.previewType || 'image/jpeg');
+function removeImage(i) {
+  state.uploadedImages = state.uploadedImages.filter((_, idx) => idx !== i);
+  render();
 }
 
-function clearScreenshot() {
-  setState({ previewSrc: null, previewBase64: null, previewType: null });
+function clearImages() {
+  setState({ uploadedImages: [] });
+}
+
+function confirmScreenshots() {
+  if (state.uploadedImages.length > 0) analyseScreenshots(state.uploadedImages);
+}
+
+// ── Share ──
+function shareResult() {
+  const encoded = encodeResult(state.result);
+  if (!encoded) return;
+  const url = location.origin + location.pathname + '#r=' + encoded;
+  if (navigator.share) {
+    navigator.share({ title: 'The Bullshit Detector', url }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(url).then(() => {
+      setState({ shareCopied: true });
+      setTimeout(() => setState({ shareCopied: false }), 2500);
+    }).catch(() => {
+      // Fallback: select text
+      prompt('Copy this link:', url);
+    });
+  }
 }
 
 // ─── RENDER PIECES ────────────────────────────────────────────────────────────
@@ -566,18 +690,34 @@ function renderMasthead(clickable) {
   </div>`;
 }
 
-function renderUpload(label) {
-  if (state.previewSrc) {
-    return `<img src="${state.previewSrc}" class="upload-preview" alt="Screenshot preview"/>
-      <div class="upload-actions">
-        <button class="btn-primary" onclick="confirmScreenshot()" style="margin-top:0">ANALYSE SCREENSHOT</button>
-        <button class="btn-secondary" onclick="clearScreenshot()" style="margin-top:0;width:auto;padding:0 16px">CLEAR</button>
-      </div>`;
+function renderUploadZone(label) {
+  const imgs = state.uploadedImages;
+
+  if (imgs.length === 0) {
+    return `<label class="upload-label">
+      <input type="file" accept="image/*" multiple onchange="handleFileAdd(this)" style="display:none"/>
+      📷 ${label || 'Upload screenshots'}
+    </label>`;
   }
-  return `<label class="upload-label">
-    <input type="file" accept="image/*" onchange="handleFileChange(this)" style="display:none"/>
-    📷 ${label || 'Upload a screenshot instead'}
-  </label>`;
+
+  const thumbs = imgs.map((img, i) =>
+    `<div class="thumb-item">
+      <img src="${img.src}" alt="Screenshot ${i + 1}"/>
+      <button class="thumb-remove" onclick="event.stopPropagation();removeImage(${i})">×</button>
+    </div>`
+  ).join('');
+
+  const addMore = imgs.length < 8
+    ? `<label class="thumb-add" title="Add more screenshots">
+        <input type="file" accept="image/*" multiple onchange="handleFileAdd(this)" style="display:none"/>
+        +
+      </label>` : '';
+
+  const n = imgs.length;
+  return `<p class="thumb-count">${n} SCREENSHOT${n > 1 ? 'S' : ''} READY</p>
+    <div class="thumb-strip">${thumbs}${addMore}</div>
+    <button class="btn-primary" onclick="confirmScreenshots()">ANALYSE ${n} SCREENSHOT${n > 1 ? 'S' : ''}</button>
+    <button class="btn-secondary" onclick="clearImages()">CLEAR</button>`;
 }
 
 function renderScoreCard(type, result) {
@@ -624,15 +764,20 @@ function screenInput() {
   const errBanner = state.errorMsg
     ? `<div class="banner banner-error" style="margin-bottom:16px"><p>${state.errorMsg}</p></div>` : '';
 
+  // If we have uploaded images, the main CTA changes to analyse screenshots
+  const hasImages = state.uploadedImages.length > 0;
+
   return `${errBanner}
   <div class="url-row">
     <input class="url-input" type="url" placeholder="Paste a URL to analyse…" value="${state.url.replace(/"/g, '&quot;')}"
       oninput="state.url=this.value" onkeydown="if(event.key==='Enter')handleSubmit()"/>
-    <button class="detect-btn" onclick="handleSubmit()">DETECT</button>
+    <button class="detect-btn" onclick="handleSubmit()" ${hasImages ? 'style="opacity:0.4;pointer-events:none"' : ''}>DETECT</button>
   </div>
-  <p class="examples-label">TRY AN EXAMPLE:</p>
-  <button class="example-chip" onclick="setState({screen:'result',result:DEMO_RESULT,isDemo:true,openCard:null})">Fortune · CEO hiring article</button>
-  <div class="explainer">
+  ${!hasImages ? `<p class="examples-label">TRY AN EXAMPLE:</p>
+  <button class="example-chip" onclick="setState({screen:'result',result:DEMO_RESULT,isDemo:true,openCard:null})">Fortune · CEO hiring article</button>` : ''}
+  <div class="or-divider"><span class="or-text">OR</span></div>
+  ${renderUploadZone('Upload a screenshot instead')}
+  ${!hasImages ? `<div class="explainer">
     <p class="explainer-label">Three independent scores</p>
     ${[
       { color: '#16a34a', key: 'TRUTH',     desc: 'Evidentiary quality. How well-sourced are the claims? Starts at 100, deducted based on sourcing signals.' },
@@ -645,7 +790,7 @@ function screenInput() {
         <p class="explainer-desc">${e.desc}</p>
       </div>
     </div>`).join('')}
-  </div>`;
+  </div>` : ''}`;
 }
 
 function screenAnalysing(isScreenshot) {
@@ -670,7 +815,7 @@ function screenAccess() {
     ${hashNote}
   </div>
   <p class="explainer-label" style="margin-top:4px;margin-bottom:8px">SCREENSHOT FALLBACK</p>
-  ${renderUpload('Screenshot the article and upload it')}
+  ${renderUploadZone('Screenshot the article and upload it')}
   <br/><button class="btn-back" onclick="resetToInput()">← Try a different URL</button>`;
 }
 
@@ -679,7 +824,7 @@ function screenFormat() {
   const canGo   = FORMAT_CAN_PROCEED.includes(fmt);
   const procBtn = canGo
     ? `<button class="btn-primary" style="margin-top:16px" onclick="analyseUrl(state.url)">ANALYSE ANYWAY</button>` : '';
-  const upload  = !canGo ? `<p class="explainer-label" style="margin-top:16px;margin-bottom:8px">SCREENSHOT FALLBACK</p>${renderUpload('Screenshot the content and upload it')}` : '';
+  const upload  = !canGo ? `<p class="explainer-label" style="margin-top:16px;margin-bottom:8px">SCREENSHOT FALLBACK</p>${renderUploadZone('Screenshot the content and upload it')}` : '';
   return `<div class="card">
     <span class="state-tag" style="background:#fff7ed;color:#ea580c;border:1px solid #fed7aa">⚠ ${FORMAT_LABELS[fmt] || 'Unsupported format'}</span>
     <p class="state-body">${FORMAT_MESSAGES[fmt] || ''}</p>
@@ -704,7 +849,7 @@ function screenCombined() {
       : 'Additionally, this publisher blocks automated access.'}</p>
   </div>
   <p class="explainer-label" style="margin-top:4px;margin-bottom:8px">SCREENSHOT FALLBACK</p>
-  ${renderUpload('Screenshot the article and upload it')}
+  ${renderUploadZone('Screenshot the article and upload it')}
   <button class="btn-back" onclick="resetToInput()">← Try a different URL</button>`;
 }
 
@@ -713,11 +858,14 @@ function screenResult() {
   if (!r) return '';
 
   const demoBanner = state.isDemo
-    ? `<div class="banner banner-demo"><p>DEMO RESULT — deploy the edge function and paste a real URL for live analysis</p></div>` : '';
+    ? `<div class="banner banner-demo"><p>DEMO RESULT — paste a real URL for live analysis</p></div>` : '';
   const ssBanner = r.screenshotMode
     ? `<div class="banner banner-screenshot"><p>SCREENSHOT MODE — Truth and Clickbait are indicative (~). Ragebait is most reliable.</p></div>` : '';
   const headline = r.headline ? `<p class="headline-quote">"${r.headline}"</p>` : '';
   const pub      = r.publication ? `<p class="publication-tag">${r.publication.toUpperCase()}</p>` : '';
+
+  const shareBtnLabel = state.shareCopied ? '✓ LINK COPIED' : '↑ SHARE THIS RESULT';
+  const shareBtnClass = state.shareCopied ? 'share-btn copied' : 'share-btn';
 
   return `${demoBanner}${ssBanner}
   ${headline}${pub}
@@ -733,6 +881,7 @@ function screenResult() {
   ${renderScoreCard('truth',     r)}
   ${renderScoreCard('clickbait', r)}
   ${renderScoreCard('ragebait',  r)}
+  <button class="${shareBtnClass}" onclick="shareResult()">${shareBtnLabel}</button>
   <button class="btn-secondary" onclick="resetToInput()">ANALYSE ANOTHER</button>`;
 }
 
@@ -762,7 +911,19 @@ function render() {
 }
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
-render();
+(function boot() {
+  // Check for shared result in URL hash
+  const hash = location.hash;
+  if (hash.startsWith('#r=')) {
+    const decoded = decodeResult(hash.slice(3));
+    if (decoded && decoded.scores) {
+      state.result = decoded;
+      state.screen = 'result';
+      state.isDemo = false;
+    }
+  }
+  render();
+})();
 </script>
 </body>
 </html>
