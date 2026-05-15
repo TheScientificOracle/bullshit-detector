@@ -18,304 +18,130 @@
     --radius:  10px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    font-family: Georgia, serif;
-  }
-  #app {
-    max-width: 480px;
-    margin: 0 auto;
-    padding: 0 20px 60px;
-  }
+  body { background: var(--bg); color: var(--text); min-height: 100vh; font-family: Georgia, serif; }
+  #app { max-width: 480px; margin: 0 auto; padding: 0 20px 60px; }
   .mono { font-family: 'Courier New', monospace; }
 
   /* ── Masthead ── */
-  .masthead {
-    text-align: center;
-    padding: 32px 0 20px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 24px;
-  }
-  .eyebrow {
-    font-family: 'Courier New', monospace;
-    font-size: 9.5px;
-    letter-spacing: 3px;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-bottom: 6px;
-  }
-  .masthead h1 {
-    font-family: Georgia, serif;
-    font-size: 28px;
-    font-weight: bold;
-    letter-spacing: -0.5px;
-    color: var(--text);
-    cursor: default;
-  }
+  .masthead { text-align: center; padding: 32px 0 20px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+  .eyebrow { font-family: 'Courier New', monospace; font-size: 9.5px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
+  .masthead h1 { font-family: Georgia, serif; font-size: 28px; font-weight: bold; letter-spacing: -0.5px; color: var(--text); cursor: default; }
   .masthead h1.clickable { cursor: pointer; }
 
   /* ── Cards ── */
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 18px 20px;
-    margin-bottom: 12px;
-  }
-  .card-label {
-    font-family: 'Courier New', monospace;
-    font-size: 9.5px;
-    letter-spacing: 1.5px;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-bottom: 10px;
-  }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 12px; }
+  .card-label { font-family: 'Courier New', monospace; font-size: 9.5px; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; }
 
   /* ── Buttons ── */
   button { cursor: pointer; font-family: inherit; border: none; }
-  .btn-primary {
-    width: 100%; padding: 13px; background: #111; color: white;
-    border-radius: var(--radius); font-family: 'Courier New', monospace;
-    font-size: 13px; letter-spacing: 1px; border: none; cursor: pointer;
-  }
+  .btn-primary { width: 100%; padding: 13px; background: #111; color: white; border-radius: var(--radius); font-family: 'Courier New', monospace; font-size: 13px; letter-spacing: 1px; border: none; cursor: pointer; }
   .btn-primary:hover { opacity: 0.88; }
-  .btn-secondary {
-    width: 100%; padding: 13px; background: transparent; color: var(--subtle);
-    border-radius: var(--radius); font-family: 'Courier New', monospace;
-    font-size: 12px; letter-spacing: 0.5px; border: 1px solid var(--border);
-    cursor: pointer; margin-top: 8px;
-  }
+  .btn-primary.success { background: var(--truth); }
+  .btn-secondary { width: 100%; padding: 13px; background: transparent; color: var(--subtle); border-radius: var(--radius); font-family: 'Courier New', monospace; font-size: 12px; letter-spacing: 0.5px; border: 1px solid var(--border); cursor: pointer; margin-top: 8px; }
   .btn-secondary:hover { border-color: #aaa; }
-  .btn-back {
-    background: none; border: none; color: var(--muted);
-    font-family: 'Courier New', monospace; font-size: 11px;
-    letter-spacing: 0.5px; padding: 0; margin-top: 20px;
-    cursor: pointer;
-  }
+  .btn-back { background: none; border: none; color: var(--muted); font-family: 'Courier New', monospace; font-size: 11px; letter-spacing: 0.5px; padding: 0; margin-top: 20px; cursor: pointer; }
 
   /* ── URL Input ── */
   .url-row { display: flex; gap: 8px; margin-bottom: 12px; }
-  .url-input {
-    flex: 1; font-family: Georgia, serif; font-size: 14px;
-    border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 13px 14px; background: var(--card); color: var(--text);
-    outline: none;
-  }
+  .url-input { flex: 1; font-family: Georgia, serif; font-size: 14px; border: 1px solid var(--border); border-radius: var(--radius); padding: 13px 14px; background: var(--card); color: var(--text); outline: none; }
   .url-input:focus { border-color: #aaa; }
-  .detect-btn {
-    background: #111; color: white; border: none;
-    border-radius: var(--radius); padding: 13px 18px;
-    font-family: 'Courier New', monospace; font-size: 13px;
-    letter-spacing: 0.5px; cursor: pointer; flex-shrink: 0;
-  }
+  .detect-btn { background: #111; color: white; border: none; border-radius: var(--radius); padding: 13px 18px; font-family: 'Courier New', monospace; font-size: 13px; letter-spacing: 0.5px; cursor: pointer; flex-shrink: 0; }
   .detect-btn:hover { opacity: 0.88; }
 
   /* ── Examples ── */
-  .examples-label {
-    font-family: 'Courier New', monospace; font-size: 10px;
-    color: var(--muted); letter-spacing: 0.5px; margin-bottom: 6px;
-  }
-  .example-chip {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 20px; padding: 6px 14px;
-    font-family: 'Courier New', monospace; font-size: 11px;
-    color: var(--subtle); cursor: pointer;
-  }
+  .examples-label { font-family: 'Courier New', monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.5px; margin-bottom: 6px; }
+  .example-chip { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 6px 14px; font-family: 'Courier New', monospace; font-size: 11px; color: var(--subtle); cursor: pointer; }
   .example-chip:hover { border-color: #aaa; }
 
   /* ── OR divider ── */
-  .or-divider {
-    display: flex; align-items: center; gap: 12px;
-    margin: 18px 0 14px;
-  }
-  .or-divider::before, .or-divider::after {
-    content: ''; flex: 1; height: 1px; background: var(--border);
-  }
-  .or-text {
-    font-family: 'Courier New', monospace; font-size: 9.5px;
-    letter-spacing: 2px; color: var(--muted);
-  }
+  .or-divider { display: flex; align-items: center; gap: 12px; margin: 18px 0 14px; }
+  .or-divider::before, .or-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .or-text { font-family: 'Courier New', monospace; font-size: 9.5px; letter-spacing: 2px; color: var(--muted); }
 
   /* ── Score Explainer ── */
   .explainer { margin-top: 28px; }
-  .explainer-label {
-    font-family: 'Courier New', monospace; font-size: 10px;
-    letter-spacing: 1.2px; color: var(--muted); margin-bottom: 12px;
-    text-transform: uppercase;
-  }
+  .explainer-label { font-family: 'Courier New', monospace; font-size: 10px; letter-spacing: 1.2px; color: var(--muted); margin-bottom: 12px; text-transform: uppercase; }
   .explainer-row { display: flex; gap: 12px; margin-bottom: 14px; }
   .explainer-bar { width: 3px; border-radius: 2px; flex-shrink: 0; min-height: 40px; }
-  .explainer-title {
-    font-family: 'Courier New', monospace; font-size: 10px;
-    letter-spacing: 1.2px; font-weight: bold; margin-bottom: 3px;
-    text-transform: uppercase;
-  }
+  .explainer-title { font-family: 'Courier New', monospace; font-size: 10px; letter-spacing: 1.2px; font-weight: bold; margin-bottom: 3px; text-transform: uppercase; }
   .explainer-desc { font-size: 12.5px; color: #777; line-height: 1.55; }
 
   /* ── Spinner ── */
   @keyframes spin { to { transform: rotate(360deg); } }
-  .spinner {
-    width: 32px; height: 32px;
-    border: 2.5px solid var(--border); border-top-color: #333;
-    border-radius: 50%; animation: spin 0.8s linear infinite;
-    margin: 0 auto 20px;
-  }
-  .phase-text {
-    font-family: 'Courier New', monospace; font-size: 12px;
-    color: var(--muted); letter-spacing: 0.5px; text-align: center;
-  }
+  .spinner { width: 32px; height: 32px; border: 2.5px solid var(--border); border-top-color: #333; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 20px; }
+  .phase-text { font-family: 'Courier New', monospace; font-size: 12px; color: var(--muted); letter-spacing: 0.5px; text-align: center; }
   .analysing-wrap { text-align: center; padding: 40px 0; }
 
   /* ── Blocked / format states ── */
-  .state-tag {
-    font-family: 'Courier New', monospace; font-size: 10px;
-    letter-spacing: 1px; text-transform: uppercase;
-    border-radius: 4px; padding: 3px 9px; display: inline-block;
-    margin-bottom: 12px; font-weight: bold;
-  }
+  .state-tag { font-family: 'Courier New', monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; border-radius: 4px; padding: 3px 9px; display: inline-block; margin-bottom: 12px; font-weight: bold; }
   .state-body { font-size: 14px; color: #444; line-height: 1.65; }
   .state-body-sm { font-size: 13px; color: #888; line-height: 1.6; margin-top: 10px; }
 
   /* ── Screenshot upload zone ── */
-  .upload-label {
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    font-family: 'Courier New', monospace; font-size: 12px; color: var(--muted);
-    letter-spacing: 0.5px; border: 1px dashed #d8d0c6; border-radius: var(--radius);
-    padding: 14px 16px; cursor: pointer; width: 100%;
-  }
+  .upload-label { display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'Courier New', monospace; font-size: 12px; color: var(--muted); letter-spacing: 0.5px; border: 1px dashed #d8d0c6; border-radius: var(--radius); padding: 14px 16px; cursor: pointer; width: 100%; }
   .upload-label:hover { border-color: #aaa; color: var(--subtle); }
 
   /* ── Thumbnail strip ── */
-  .thumb-strip {
-    display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px;
-    margin-bottom: 10px; scrollbar-width: thin;
-  }
-  .thumb-item {
-    flex-shrink: 0; position: relative;
-    height: 88px; border-radius: 7px;
-    border: 1px solid var(--border); overflow: hidden;
-  }
-  .thumb-item img {
-    height: 88px; width: auto; display: block;
-  }
-  .thumb-remove {
-    position: absolute; top: 3px; right: 3px;
-    background: rgba(0,0,0,0.65); color: white; border: none;
-    border-radius: 50%; width: 20px; height: 20px;
-    font-size: 13px; cursor: pointer; line-height: 1;
-    display: flex; align-items: center; justify-content: center;
-    padding: 0;
-  }
-  .thumb-add {
-    flex-shrink: 0; height: 88px; width: 60px;
-    border: 1px dashed #d8d0c6; border-radius: 7px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; color: var(--muted); font-size: 22px;
-    font-family: 'Courier New', monospace;
-  }
+  .thumb-strip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 10px; scrollbar-width: thin; }
+  .thumb-item { flex-shrink: 0; position: relative; height: 88px; border-radius: 7px; border: 1px solid var(--border); overflow: hidden; }
+  .thumb-item img { height: 88px; width: auto; display: block; }
+  .thumb-remove { position: absolute; top: 3px; right: 3px; background: rgba(0,0,0,0.65); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 13px; cursor: pointer; line-height: 1; display: flex; align-items: center; justify-content: center; padding: 0; }
+  .thumb-add { flex-shrink: 0; height: 88px; width: 60px; border: 1px dashed #d8d0c6; border-radius: 7px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); font-size: 22px; font-family: 'Courier New', monospace; }
   .thumb-add:hover { border-color: #aaa; color: var(--subtle); }
-  .thumb-count {
-    font-family: 'Courier New', monospace; font-size: 10px;
-    color: var(--muted); letter-spacing: 0.5px; margin-bottom: 8px;
-  }
+  .thumb-count { font-family: 'Courier New', monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.5px; margin-bottom: 8px; }
 
   /* ── Result: verdict ── */
-  .verdict-quote {
-    font-family: Georgia, serif; font-size: 16px; color: var(--text);
-    line-height: 1.6; font-style: italic;
-  }
-  .headline-quote {
-    font-family: Georgia, serif; font-size: 14px; font-style: italic;
-    color: #777; margin-bottom: 4px; line-height: 1.5;
-  }
-  .publication-tag {
-    font-family: 'Courier New', monospace; font-size: 10px;
-    color: var(--muted); letter-spacing: 1px; margin-bottom: 20px;
-  }
+  .verdict-quote { font-family: Georgia, serif; font-size: 16px; color: var(--text); line-height: 1.6; font-style: italic; }
+  .headline-quote { font-family: Georgia, serif; font-size: 14px; font-style: italic; color: #777; margin-bottom: 4px; line-height: 1.5; }
+  .publication-tag { font-family: 'Courier New', monospace; font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 20px; }
 
   /* ── Score cards ── */
-  .score-card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 14px 16px;
-    margin-bottom: 10px; cursor: pointer; user-select: none;
-  }
+  .score-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px; cursor: pointer; user-select: none; }
   .score-card-head { display: flex; align-items: center; justify-content: space-between; }
   .score-card-left { display: flex; align-items: center; gap: 10px; }
-  .score-type {
-    font-family: 'Courier New', monospace; font-size: 11px;
-    letter-spacing: 1.5px; font-weight: bold; text-transform: uppercase;
-  }
-  .score-band {
-    font-family: 'Courier New', monospace; font-size: 10px;
-    border-radius: 4px; padding: 2px 7px; font-weight: bold;
-    letter-spacing: 0.5px;
-  }
+  .score-type { font-family: 'Courier New', monospace; font-size: 11px; letter-spacing: 1.5px; font-weight: bold; text-transform: uppercase; }
+  .score-band { font-family: 'Courier New', monospace; font-size: 10px; border-radius: 4px; padding: 2px 7px; font-weight: bold; letter-spacing: 0.5px; }
   .score-right { display: flex; align-items: center; gap: 8px; }
   .score-num { font-family: 'Courier New', monospace; font-size: 22px; font-weight: bold; }
-  .score-chevron {
-    font-family: 'Courier New', monospace; font-size: 11px; color: #bbb;
-    transition: transform 0.2s; display: inline-block;
-  }
+  .score-chevron { font-family: 'Courier New', monospace; font-size: 11px; color: #bbb; transition: transform 0.2s; display: inline-block; }
   .score-card-body { margin-top: 14px; }
-  .caveat-box {
-    border: 1px dashed #d8d0c6; border-radius: 6px; padding: 8px 12px;
-    margin-bottom: 12px;
-    background: repeating-linear-gradient(-45deg, transparent, transparent 5px, rgba(0,0,0,0.015) 5px, rgba(0,0,0,0.015) 10px);
-  }
-  .caveat-text {
-    font-family: 'Courier New', monospace; font-size: 10px;
-    color: #888; letter-spacing: 0.3px;
-  }
+  .caveat-box { border: 1px dashed #d8d0c6; border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; background: repeating-linear-gradient(-45deg, transparent, transparent 5px, rgba(0,0,0,0.015) 5px, rgba(0,0,0,0.015) 10px); }
+  .caveat-text { font-family: 'Courier New', monospace; font-size: 10px; color: #888; letter-spacing: 0.3px; }
   .reasoning-bullet { display: flex; gap: 10px; margin-bottom: 8px; padding-left: 10px; }
   .reasoning-text { font-size: 13px; color: #555; line-height: 1.5; }
-  .truth-note {
-    font-family: 'Courier New', monospace; font-size: 9.5px;
-    color: #aaa; margin-top: 10px; line-height: 1.6; letter-spacing: 0.3px;
-  }
+  .truth-note { font-family: 'Courier New', monospace; font-size: 9.5px; color: #aaa; margin-top: 10px; line-height: 1.6; letter-spacing: 0.3px; }
 
-  /* ── Share button ── */
-  .share-btn {
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    width: 100%; padding: 12px; background: transparent; color: var(--subtle);
-    border: 1px solid var(--border); border-radius: var(--radius);
-    font-family: 'Courier New', monospace; font-size: 12px; letter-spacing: 0.5px;
-    cursor: pointer; margin-bottom: 8px;
-  }
-  .share-btn:hover { border-color: #aaa; }
-  .share-btn.copied { border-color: #16a34a; color: #16a34a; }
+  /* ── Share section ── */
+  .share-wrap { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 10px; }
+  .share-tabs { display: flex; border: 1px solid var(--border); border-radius: 7px; overflow: hidden; margin-bottom: 10px; }
+  .share-tab { flex: 1; padding: 8px; background: transparent; border: none; font-family: 'Courier New', monospace; font-size: 9.5px; letter-spacing: 1px; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+  .share-tab.active { background: #111; color: white; }
+  .msg-preview { border: 1px dashed #d0c9c0; border-radius: 9px; padding: 13px 14px; margin-bottom: 10px; }
+  .msg-preview-text { font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.8; color: #444; white-space: pre-wrap; }
+  .msg-cta-line { font-weight: bold; color: #222; }
+  .share-btn-row { display: flex; gap: 7px; margin-top: 8px; }
+  .share-btn-sm { flex: 1; padding: 10px 6px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 10px; letter-spacing: 0.5px; cursor: pointer; border: none; text-align: center; }
+  .btn-wa { background: #25D366; color: white; }
+  .btn-wa:hover { opacity: 0.88; }
+  .btn-cl { background: transparent; color: var(--subtle); border: 1px solid var(--border) !important; }
+  .btn-cl:hover { border-color: #aaa !important; }
+  .btn-cl.success { color: var(--truth); border-color: var(--truth) !important; }
+
+  /* ── Re-run box ── */
+  .rerun-box { background: #f8f7f4; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 12px; }
 
   /* ── Banners ── */
-  .banner {
-    border-radius: 8px; padding: 8px 14px; margin-bottom: 14px;
-  }
-  .banner-demo {
-    background: #fffbeb; border: 1px solid #fcd34d;
-  }
-  .banner-demo p {
-    font-family: 'Courier New', monospace; font-size: 10px;
-    color: #92400e; letter-spacing: 0.5px;
-  }
-  .banner-screenshot {
-    background: #f8faff; border: 1px dashed #cbd5e1;
-  }
-  .banner-screenshot p {
-    font-family: 'Courier New', monospace; font-size: 10px;
-    color: #64748b; letter-spacing: 0.5px;
-  }
+  .banner { border-radius: 8px; padding: 8px 14px; margin-bottom: 14px; }
+  .banner-demo { background: #fffbeb; border: 1px solid #fcd34d; }
+  .banner-demo p { font-family: 'Courier New', monospace; font-size: 10px; color: #92400e; letter-spacing: 0.5px; }
+  .banner-screenshot { background: #f8faff; border: 1px dashed #cbd5e1; }
+  .banner-screenshot p { font-family: 'Courier New', monospace; font-size: 10px; color: #64748b; letter-spacing: 0.5px; }
   .banner-error { background: #fef2f2; border: 1px solid #fca5a5; }
   .banner-error p { font-size: 13px; color: #dc2626; font-family: Georgia, serif; }
 
   /* ── Error state ── */
-  .error-heading {
-    font-family: 'Courier New', monospace; font-size: 10px;
-    letter-spacing: 1.5px; color: var(--rb); margin-bottom: 12px;
-    text-align: center;
-  }
-  .error-body {
-    font-size: 14px; color: #666; line-height: 1.65; text-align: center; margin-bottom: 24px;
-  }
+  .error-heading { font-family: 'Courier New', monospace; font-size: 10px; letter-spacing: 1.5px; color: var(--rb); margin-bottom: 12px; text-align: center; }
+  .error-body { font-size: 14px; color: #666; line-height: 1.65; text-align: center; margin-bottom: 24px; }
 </style>
 </head>
 <body>
@@ -323,7 +149,7 @@
 
 <script>
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
-const EDGE_URL     = 'https://qpisyykqmivljpsqleul.supabase.co/functions/v1/bs-detect';
+const EDGE_URL      = 'https://qpisyykqmivljpsqleul.supabase.co/functions/v1/bs-detect';
 const SUPABASE_ANON = 'sb_publishable_woWGWtBvw0FJJNaP7rC63A_y5ZSVBjp';
 
 // ─── URL / FORMAT DETECTION ───────────────────────────────────────────────────
@@ -355,11 +181,8 @@ function isHashUrl(url) {
 }
 
 const FORMAT_LABELS = {
-  'live-blog':     'Live blog',
-  'opinion':       'Opinion / column',
-  'press-release': 'Press release',
-  'social':        'Social media post',
-  'video':         'Video content',
+  'live-blog': 'Live blog', 'opinion': 'Opinion / column',
+  'press-release': 'Press release', 'social': 'Social media post', 'video': 'Video content',
 };
 const FORMAT_MESSAGES = {
   'live-blog':     "Live blogs update continuously — there's no fixed article to score against a headline. This format breaks the model.",
@@ -378,18 +201,18 @@ function getTruthBand(s) {
   return              { label: 'No basis',        color: '#7f1d1d' };
 }
 function getClickbaitBand(s) {
-  if (s <= 20) return { label: 'Honest',     color: '#16a34a' };
-  if (s <= 40) return { label: 'Mild',       color: '#ca8a04' };
-  if (s <= 60) return { label: 'Notable',    color: '#ea580c' };
-  if (s <= 80) return { label: 'High',       color: '#dc2626' };
-  return              { label: 'Egregious',  color: '#7f1d1d' };
+  if (s <= 20) return { label: 'Honest',    color: '#16a34a' };
+  if (s <= 40) return { label: 'Mild',      color: '#ca8a04' };
+  if (s <= 60) return { label: 'Notable',   color: '#ea580c' };
+  if (s <= 80) return { label: 'High',      color: '#dc2626' };
+  return              { label: 'Egregious', color: '#7f1d1d' };
 }
 function getRagebaitBand(s) {
-  if (s <= 20) return { label: 'Clean',    color: '#16a34a' };
-  if (s <= 40) return { label: 'Mild',     color: '#ca8a04' };
-  if (s <= 60) return { label: 'Notable',  color: '#ea580c' };
-  if (s <= 80) return { label: 'High',     color: '#dc2626' };
-  return              { label: 'Weapon',   color: '#7f1d1d' };
+  if (s <= 20) return { label: 'Clean',   color: '#16a34a' };
+  if (s <= 40) return { label: 'Mild',    color: '#ca8a04' };
+  if (s <= 60) return { label: 'Notable', color: '#ea580c' };
+  if (s <= 80) return { label: 'High',    color: '#dc2626' };
+  return              { label: 'Weapon',  color: '#7f1d1d' };
 }
 function getBand(type, score) {
   if (type === 'truth')     return getTruthBand(score);
@@ -412,9 +235,9 @@ function renderRadar(scores, screenshotMode) {
   function clamp(v) { return Math.max(0, Math.min(100, v || 0)); }
 
   const truthAxis = pt(TRUTH_A), cbAxis = pt(CB_A), rbAxis = pt(RB_A);
-  const dT  = pt(TRUTH_A, r * clamp(scores.truth)     / 100);
-  const dCB = pt(CB_A,    r * clamp(scores.clickbait)  / 100);
-  const dRB = pt(RB_A,    r * clamp(scores.ragebait)   / 100);
+  const dT  = pt(TRUTH_A, r * clamp(scores.truth)    / 100);
+  const dCB = pt(CB_A,    r * clamp(scores.clickbait) / 100);
+  const dRB = pt(RB_A,    r * clamp(scores.ragebait)  / 100);
 
   function gridPoly(pct) {
     const t = pt(TRUTH_A, r * pct / 100);
@@ -445,9 +268,9 @@ function renderRadar(scores, screenshotMode) {
     ${tDash}<circle cx="${dT.x}"  cy="${dT.y}"  r="7" fill="white" stroke="#16a34a" stroke-width="2"/><circle cx="${dT.x}"  cy="${dT.y}"  r="3" fill="#16a34a"/>
     ${cbDash}<circle cx="${dCB.x}" cy="${dCB.y}" r="7" fill="white" stroke="#ea580c" stroke-width="2"/><circle cx="${dCB.x}" cy="${dCB.y}" r="3" fill="#ea580c"/>
     <circle cx="${dRB.x}" cy="${dRB.y}" r="7" fill="white" stroke="#dc2626" stroke-width="2"/><circle cx="${dRB.x}" cy="${dRB.y}" r="3" fill="#dc2626"/>
-    <text x="${dT.x}"      y="${dT.y - 16}"  text-anchor="middle" font-family="'Courier New',monospace" font-size="11.5" fill="#16a34a" font-weight="bold">${tLabel}</text>
-    <text x="${dCB.x + 15}" y="${dCB.y + 4}"  text-anchor="start"  font-family="'Courier New',monospace" font-size="11.5" fill="#ea580c" font-weight="bold">${cbLabel}</text>
-    <text x="${dRB.x - 15}" y="${dRB.y + 4}"  text-anchor="end"    font-family="'Courier New',monospace" font-size="11.5" fill="#dc2626" font-weight="bold">${scores.ragebait}</text>
+    <text x="${dT.x}"       y="${dT.y - 16}"   text-anchor="middle" font-family="'Courier New',monospace" font-size="11.5" fill="#16a34a" font-weight="bold">${tLabel}</text>
+    <text x="${dCB.x + 15}" y="${dCB.y + 4}"   text-anchor="start"  font-family="'Courier New',monospace" font-size="11.5" fill="#ea580c" font-weight="bold">${cbLabel}</text>
+    <text x="${dRB.x - 15}" y="${dRB.y + 4}"   text-anchor="end"    font-family="'Courier New',monospace" font-size="11.5" fill="#dc2626" font-weight="bold">${scores.ragebait}</text>
     <text x="${truthAxis.x}"  y="${truthAxis.y - 14}" text-anchor="middle" font-family="'Courier New',monospace" font-size="9.5" fill="#16a34a" font-weight="bold" letter-spacing="1.2">TRUTH</text>
     <text x="${cbAxis.x + 6}" y="${cbAxis.y + 5}"    text-anchor="start"  font-family="'Courier New',monospace" font-size="9.5" fill="#ea580c" font-weight="bold" letter-spacing="1.2">CLICKBAIT</text>
     <text x="${rbAxis.x - 6}" y="${rbAxis.y + 5}"    text-anchor="end"    font-family="'Courier New',monospace" font-size="9.5" fill="#dc2626" font-weight="bold" letter-spacing="1.2">RAGEBAIT</text>
@@ -457,7 +280,7 @@ function renderRadar(scores, screenshotMode) {
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
 const state = {
-  screen:         'input',   // input | analysing | screenshot-analysing | access | format | combined | result | error
+  screen:         'input',
   url:            '',
   detectedFormat: null,
   detectedAccess: null,
@@ -465,12 +288,12 @@ const state = {
   phaseIndex:     0,
   isDemo:         false,
   errorMsg:       '',
-  // multiple screenshot uploads
-  uploadedImages: [],        // [{src, base64, mType}]
-  // score card open state
-  openCard:       null,      // 'truth' | 'clickbait' | 'ragebait'
-  // share feedback
-  shareCopied:    false,
+  uploadedImages: [],      // [{src, base64, mType}]
+  openCard:       null,    // 'truth' | 'clickbait' | 'ragebait'
+  // share
+  shareTab:       'short', // 'short' | 'full'
+  copiedBtn:      null,    // 'msg' | 'link' | null
+  isSharedResult: false,   // true when result loaded from URL hash
 };
 
 let phaseTimer = null;
@@ -516,15 +339,13 @@ const DEMO_RESULT = {
 
 // ─── RESULT HASH (shareable URLs) ────────────────────────────────────────────
 function encodeResult(result) {
-  try {
-    return btoa(unescape(encodeURIComponent(JSON.stringify(result))));
-  } catch { return null; }
+  try { return btoa(unescape(encodeURIComponent(JSON.stringify(result)))); }
+  catch { return null; }
 }
 
 function decodeResult(hash) {
-  try {
-    return JSON.parse(decodeURIComponent(escape(atob(hash))));
-  } catch { return null; }
+  try { return JSON.parse(decodeURIComponent(escape(atob(hash)))); }
+  catch { return null; }
 }
 
 function setResultHash(result) {
@@ -536,15 +357,53 @@ function clearHash() {
   history.replaceState(null, '', location.pathname + location.search);
 }
 
+// ─── SHARE HELPERS ────────────────────────────────────────────────────────────
+function getShareMessage() {
+  const r   = state.result;
+  const url = location.href;
+  const sc  = `Truth ${r.scores.truth} · Clickbait ${r.scores.clickbait} · Ragebait ${r.scores.ragebait}`;
+  const vd  = `"${r.verdict}"`;
+  const cta = `Disagree? Run it yourself → ${url}`;
+
+  if (state.shareTab === 'full' && r.headline) {
+    const hl  = r.headline.length > 72 ? r.headline.slice(0, 69) + '…' : r.headline;
+    const pub = r.publication ? ` (${r.publication})` : '';
+    return `On "${hl}"${pub}:\n\n${sc}\n\n${vd}\n\n${cta}`;
+  }
+  return `The Bullshit Detector verdict:\n\n${sc}\n\n${vd}\n\n${cta}`;
+}
+
+function switchShareTab(tab) { setState({ shareTab: tab }); }
+
+function copyShareMsg() {
+  const msg = getShareMessage();
+  navigator.clipboard.writeText(msg)
+    .then(() => { setState({ copiedBtn: 'msg' }); setTimeout(() => setState({ copiedBtn: null }), 2200); })
+    .catch(() => { prompt('Copy this message:', msg); });
+}
+
+function shareWhatsapp() {
+  window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(getShareMessage()), '_blank');
+}
+
+function copyShareLink() {
+  navigator.clipboard.writeText(location.href)
+    .then(() => { setState({ copiedBtn: 'link' }); setTimeout(() => setState({ copiedBtn: null }), 2200); })
+    .catch(() => { prompt('Copy this link:', location.href); });
+}
+
+function rerunShared() {
+  if (state.result && state.result.sourceUrl) {
+    state.url = state.result.sourceUrl;
+    analyseUrl(state.result.sourceUrl);
+  }
+}
+
 // ─── API CALL ─────────────────────────────────────────────────────────────────
 async function callEdge(body) {
   const res = await fetch(EDGE_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type':  'application/json',
-      'Authorization': `Bearer ${SUPABASE_ANON}`,
-      'apikey':         SUPABASE_ANON,
-    },
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON}`, 'apikey': SUPABASE_ANON },
     body: JSON.stringify(body),
   });
   const data = await res.json();
@@ -557,20 +416,19 @@ async function analyseUrl(url) {
   setState({ screen: 'analysing', phaseIndex: 0, errorMsg: '', uploadedImages: [] });
   try {
     const result = await callEdge({ type: 'url', url });
+    result.sourceUrl = url;  // store for share/re-run
     stopPhases();
     setResultHash(result);
-    setState({ screen: 'result', result, isDemo: false, openCard: null });
+    setState({ screen: 'result', result, isDemo: false, openCard: null, isSharedResult: false, shareTab: 'short', copiedBtn: null });
   } catch (err) {
     stopPhases();
     console.error(err);
-    // Fallback to demo
     setResultHash(DEMO_RESULT);
-    setState({ screen: 'result', result: DEMO_RESULT, isDemo: true, openCard: null });
+    setState({ screen: 'result', result: DEMO_RESULT, isDemo: true, openCard: null, isSharedResult: false, shareTab: 'short', copiedBtn: null });
   }
 }
 
 async function analyseScreenshots(images) {
-  // images: [{src, base64, mType}]
   startPhases(true);
   setState({ screen: 'screenshot-analysing', phaseIndex: 0, errorMsg: '' });
   try {
@@ -580,7 +438,7 @@ async function analyseScreenshots(images) {
     });
     stopPhases();
     setResultHash(result);
-    setState({ screen: 'result', result, isDemo: false, openCard: null });
+    setState({ screen: 'result', result, isDemo: false, openCard: null, isSharedResult: false, shareTab: 'short', copiedBtn: null });
   } catch (err) {
     stopPhases();
     console.error(err);
@@ -592,12 +450,9 @@ async function analyseScreenshots(images) {
 function handleSubmit() {
   const url = state.url.trim();
   if (!url) {
-    // If no URL but we have screenshots, run screenshot analysis
     if (state.uploadedImages.length > 0) { confirmScreenshots(); return; }
     return;
   }
-
-  // Format detection BEFORE access check (Gap 1 fix)
   const fmt = detectFormat(url);
   const acc = detectAccess(url);
 
@@ -613,73 +468,40 @@ function handleSubmit() {
     setState({ screen: 'combined', detectedFormat: fmt, detectedAccess: acc });
     return;
   }
-
   analyseUrl(url);
 }
 
 function resetToInput() {
   stopPhases();
   clearHash();
-  setState({ screen: 'input', result: null, detectedFormat: null, detectedAccess: null, errorMsg: '', uploadedImages: [], openCard: null, isDemo: false, shareCopied: false });
+  setState({ screen: 'input', result: null, detectedFormat: null, detectedAccess: null, errorMsg: '', uploadedImages: [], openCard: null, isDemo: false, shareTab: 'short', copiedBtn: null, isSharedResult: false });
 }
 
 function toggleCard(type) {
   setState({ openCard: state.openCard === type ? null : type });
 }
 
-// ── File upload handlers ──
 function handleFileAdd(input) {
   const files = Array.from(input.files || []);
   if (!files.length) return;
-
   let pending = files.length;
   files.forEach(file => {
-    if (state.uploadedImages.length >= 8) { pending--; return; } // max 8
+    if (state.uploadedImages.length >= 8) { pending--; return; }
     const reader = new FileReader();
     reader.onload = (e) => {
       const dataUrl = e.target.result;
-      const base64  = dataUrl.split(',')[1];
-      const mType   = file.type || 'image/jpeg';
-      state.uploadedImages = [...state.uploadedImages, { src: dataUrl, base64, mType }];
+      state.uploadedImages = [...state.uploadedImages, { src: dataUrl, base64: dataUrl.split(',')[1], mType: file.type || 'image/jpeg' }];
       pending--;
       if (pending <= 0) render();
     };
     reader.readAsDataURL(file);
   });
-  // Reset the input so the same file can be re-added if needed
   input.value = '';
 }
 
-function removeImage(i) {
-  state.uploadedImages = state.uploadedImages.filter((_, idx) => idx !== i);
-  render();
-}
-
-function clearImages() {
-  setState({ uploadedImages: [] });
-}
-
-function confirmScreenshots() {
-  if (state.uploadedImages.length > 0) analyseScreenshots(state.uploadedImages);
-}
-
-// ── Share ──
-function shareResult() {
-  const encoded = encodeResult(state.result);
-  if (!encoded) return;
-  const url = location.origin + location.pathname + '#r=' + encoded;
-  if (navigator.share) {
-    navigator.share({ title: 'The Bullshit Detector', url }).catch(() => {});
-  } else {
-    navigator.clipboard.writeText(url).then(() => {
-      setState({ shareCopied: true });
-      setTimeout(() => setState({ shareCopied: false }), 2500);
-    }).catch(() => {
-      // Fallback: select text
-      prompt('Copy this link:', url);
-    });
-  }
-}
+function removeImage(i) { state.uploadedImages = state.uploadedImages.filter((_, idx) => idx !== i); render(); }
+function clearImages()  { setState({ uploadedImages: [] }); }
+function confirmScreenshots() { if (state.uploadedImages.length > 0) analyseScreenshots(state.uploadedImages); }
 
 // ─── RENDER PIECES ────────────────────────────────────────────────────────────
 function renderMasthead(clickable) {
@@ -692,27 +514,20 @@ function renderMasthead(clickable) {
 
 function renderUploadZone(label) {
   const imgs = state.uploadedImages;
-
   if (imgs.length === 0) {
     return `<label class="upload-label">
       <input type="file" accept="image/*" multiple onchange="handleFileAdd(this)" style="display:none"/>
       📷 ${label || 'Upload screenshots'}
     </label>`;
   }
-
   const thumbs = imgs.map((img, i) =>
     `<div class="thumb-item">
       <img src="${img.src}" alt="Screenshot ${i + 1}"/>
       <button class="thumb-remove" onclick="event.stopPropagation();removeImage(${i})">×</button>
     </div>`
   ).join('');
-
   const addMore = imgs.length < 8
-    ? `<label class="thumb-add" title="Add more screenshots">
-        <input type="file" accept="image/*" multiple onchange="handleFileAdd(this)" style="display:none"/>
-        +
-      </label>` : '';
-
+    ? `<label class="thumb-add" title="Add more"><input type="file" accept="image/*" multiple onchange="handleFileAdd(this)" style="display:none"/>+</label>` : '';
   const n = imgs.length;
   return `<p class="thumb-count">${n} SCREENSHOT${n > 1 ? 'S' : ''} READY</p>
     <div class="thumb-strip">${thumbs}${addMore}</div>
@@ -721,18 +536,18 @@ function renderUploadZone(label) {
 }
 
 function renderScoreCard(type, result) {
-  const score   = result.scores[type];
-  const isOpen  = state.openCard === type;
-  const band    = getBand(type, score);
-  const color   = type === 'truth' ? '#16a34a' : type === 'clickbait' ? '#ea580c' : '#dc2626';
-  const reasons = (result.reasoning && result.reasoning[type]) || [];
-  const caveat  = result.screenshot_caveats && result.screenshot_caveats[type];
-  const isScreenshot = result.screenshotMode;
-  const scoreLabel = (isScreenshot && type !== 'ragebait') ? `~${score}` : `${score}`;
+  const score  = result.scores[type];
+  const isOpen = state.openCard === type;
+  const band   = getBand(type, score);
+  const color  = type === 'truth' ? '#16a34a' : type === 'clickbait' ? '#ea580c' : '#dc2626';
+  const reasons   = (result.reasoning && result.reasoning[type]) || [];
+  const caveat    = result.screenshot_caveats && result.screenshot_caveats[type];
+  const isShot    = result.screenshotMode;
+  const scoreLabel = (isShot && type !== 'ragebait') ? `~${score}` : `${score}`;
 
   let body = '';
   if (isOpen) {
-    const caveatHtml = (isScreenshot && caveat)
+    const caveatHtml = (isShot && caveat)
       ? `<div class="caveat-box"><p class="caveat-text">⚠ ${caveat}</p></div>` : '';
     const bullets = reasons.map(r =>
       `<div class="reasoning-bullet" style="border-left:2px solid ${color}40">
@@ -759,12 +574,56 @@ function renderScoreCard(type, result) {
   </div>`;
 }
 
+function renderShareSection(r) {
+  const hasHL  = !!(r.headline);
+  const isShort = state.shareTab === 'short';
+  const sc  = `Truth ${r.scores.truth} · Clickbait ${r.scores.clickbait} · Ragebait ${r.scores.ragebait}`;
+  const vd  = r.verdict;
+  const url = location.href;
+  const cta = `Disagree? Run it yourself → ${url}`;
+
+  let msgText;
+  if (!isShort && hasHL) {
+    const hl  = r.headline.length > 72 ? r.headline.slice(0, 69) + '…' : r.headline;
+    const pub = r.publication ? ` (${r.publication})` : '';
+    msgText = `On "${hl}"${pub}:\n\n${sc}\n\n"${vd}"\n\n${cta}`;
+  } else {
+    msgText = `The Bullshit Detector verdict:\n\n${sc}\n\n"${vd}"\n\n${cta}`;
+  }
+
+  // Escape for HTML display
+  const msgDisplay = msgText
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/Disagree\? Run it yourself →/, '<span class="msg-cta-line">Disagree? Run it yourself →</span>');
+
+  const tabs = hasHL ? `<div class="share-tabs">
+    <button class="share-tab ${isShort ? 'active' : ''}" onclick="switchShareTab('short')">SHORT</button>
+    <button class="share-tab ${!isShort ? 'active' : ''}" onclick="switchShareTab('full')">WITH HEADLINE</button>
+  </div>` : '';
+
+  const copyLabel = state.copiedBtn === 'msg' ? 'COPIED ✓' : 'COPY MESSAGE';
+  const copyStyle = state.copiedBtn === 'msg' ? 'class="btn-primary success"' : 'class="btn-primary"';
+  const linkLabel = state.copiedBtn === 'link' ? 'COPIED ✓' : 'COPY LINK';
+  const linkClass = state.copiedBtn === 'link' ? 'share-btn-sm btn-cl success' : 'share-btn-sm btn-cl';
+
+  return `<div class="share-wrap">
+    <p class="card-label" style="margin-bottom:10px">Send this result</p>
+    ${tabs}
+    <div class="msg-preview">
+      <p class="msg-preview-text">${msgDisplay}</p>
+    </div>
+    <button ${copyStyle} onclick="copyShareMsg()">${copyLabel}</button>
+    <div class="share-btn-row">
+      <button class="share-btn-sm btn-wa" onclick="shareWhatsapp()">WHATSAPP</button>
+      <button class="${linkClass}" onclick="copyShareLink()">${linkLabel}</button>
+    </div>
+  </div>`;
+}
+
 // ─── SCREENS ──────────────────────────────────────────────────────────────────
 function screenInput() {
   const errBanner = state.errorMsg
     ? `<div class="banner banner-error" style="margin-bottom:16px"><p>${state.errorMsg}</p></div>` : '';
-
-  // If we have uploaded images, the main CTA changes to analyse screenshots
   const hasImages = state.uploadedImages.length > 0;
 
   return `${errBanner}
@@ -774,7 +633,7 @@ function screenInput() {
     <button class="detect-btn" onclick="handleSubmit()" ${hasImages ? 'style="opacity:0.4;pointer-events:none"' : ''}>DETECT</button>
   </div>
   ${!hasImages ? `<p class="examples-label">TRY AN EXAMPLE:</p>
-  <button class="example-chip" onclick="setState({screen:'result',result:DEMO_RESULT,isDemo:true,openCard:null})">Fortune · CEO hiring article</button>` : ''}
+  <button class="example-chip" onclick="setState({screen:'result',result:DEMO_RESULT,isDemo:true,openCard:null,shareTab:'short',copiedBtn:null,isSharedResult:false})">Fortune · CEO hiring article</button>` : ''}
   <div class="or-divider"><span class="or-text">OR</span></div>
   ${renderUploadZone('Upload a screenshot instead')}
   ${!hasImages ? `<div class="explainer">
@@ -785,10 +644,7 @@ function screenInput() {
       { color: '#dc2626', key: 'RAGEBAIT',  desc: 'Emotional engineering. Is this content designed to provoke outrage, even if factually accurate?' },
     ].map(e => `<div class="explainer-row">
       <div class="explainer-bar" style="background:${e.color}"></div>
-      <div>
-        <p class="explainer-title" style="color:${e.color}">${e.key}</p>
-        <p class="explainer-desc">${e.desc}</p>
-      </div>
+      <div><p class="explainer-title" style="color:${e.color}">${e.key}</p><p class="explainer-desc">${e.desc}</p></div>
     </div>`).join('')}
   </div>` : ''}`;
 }
@@ -820,10 +676,9 @@ function screenAccess() {
 }
 
 function screenFormat() {
-  const fmt     = state.detectedFormat;
-  const canGo   = FORMAT_CAN_PROCEED.includes(fmt);
-  const procBtn = canGo
-    ? `<button class="btn-primary" style="margin-top:16px" onclick="analyseUrl(state.url)">ANALYSE ANYWAY</button>` : '';
+  const fmt   = state.detectedFormat;
+  const canGo = FORMAT_CAN_PROCEED.includes(fmt);
+  const procBtn = canGo ? `<button class="btn-primary" style="margin-top:16px" onclick="analyseUrl(state.url)">ANALYSE ANYWAY</button>` : '';
   const upload  = !canGo ? `<p class="explainer-label" style="margin-top:16px;margin-bottom:8px">SCREENSHOT FALLBACK</p>${renderUploadZone('Screenshot the content and upload it')}` : '';
   return `<div class="card">
     <span class="state-tag" style="background:#fff7ed;color:#ea580c;border:1px solid #fed7aa">⚠ ${FORMAT_LABELS[fmt] || 'Unsupported format'}</span>
@@ -864,8 +719,15 @@ function screenResult() {
   const headline = r.headline ? `<p class="headline-quote">"${r.headline}"</p>` : '';
   const pub      = r.publication ? `<p class="publication-tag">${r.publication.toUpperCase()}</p>` : '';
 
-  const shareBtnLabel = state.shareCopied ? '✓ LINK COPIED' : '↑ SHARE THIS RESULT';
-  const shareBtnClass = state.shareCopied ? 'share-btn copied' : 'share-btn';
+  // Re-run box: shown when this is a shared result and has a source URL
+  const rerunBox = (state.isSharedResult && r.sourceUrl)
+    ? `<div class="rerun-box">
+        <p class="card-label" style="margin-bottom:8px">Not convinced? Re-run it yourself</p>
+        <div class="url-row" style="margin-bottom:0">
+          <input class="url-input" type="url" value="${r.sourceUrl.replace(/"/g,'&quot;')}" style="font-size:12px;color:#888" readonly/>
+          <button class="detect-btn" onclick="rerunShared()">DETECT</button>
+        </div>
+      </div>` : '';
 
   return `${demoBanner}${ssBanner}
   ${headline}${pub}
@@ -881,7 +743,8 @@ function screenResult() {
   ${renderScoreCard('truth',     r)}
   ${renderScoreCard('clickbait', r)}
   ${renderScoreCard('ragebait',  r)}
-  <button class="${shareBtnClass}" onclick="shareResult()">${shareBtnLabel}</button>
+  ${rerunBox}
+  ${renderShareSection(r)}
   <button class="btn-secondary" onclick="resetToInput()">ANALYSE ANOTHER</button>`;
 }
 
@@ -894,7 +757,7 @@ function screenError() {
 // ─── MAIN RENDER ──────────────────────────────────────────────────────────────
 function render() {
   const app = document.getElementById('app');
-  const s = state.screen;
+  const s   = state.screen;
   const clickableMast = s !== 'input';
 
   let content = '';
@@ -912,14 +775,15 @@ function render() {
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
 (function boot() {
-  // Check for shared result in URL hash
   const hash = location.hash;
   if (hash.startsWith('#r=')) {
     const decoded = decodeResult(hash.slice(3));
     if (decoded && decoded.scores) {
-      state.result = decoded;
-      state.screen = 'result';
-      state.isDemo = false;
+      state.result         = decoded;
+      state.screen         = 'result';
+      state.isDemo         = false;
+      state.isSharedResult = true;
+      if (decoded.sourceUrl) state.url = decoded.sourceUrl;
     }
   }
   render();
