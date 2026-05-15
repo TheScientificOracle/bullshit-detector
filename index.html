@@ -325,9 +325,9 @@ const FORMAT_LABELS = {
 };
 const FORMAT_MESSAGES = {
   'live-blog':     "A live blog. The headline is provisional, the facts are still arriving, and there's nothing fixed to score against. Not for us.",
-  'social':        "A social post — no headline to lie, no article to fail to deliver on it. Screenshot it below; ragebait scoring still works fine.",
+  'social':        "A social post. No headline to lie, no article to fail to deliver on it. Screenshot it below; ragebait scoring still works fine.",
   'video':         "We read text, not frames. Screenshot the title or description and upload it.",
-  'opinion':       "A columnist with views. Truth scores reflect how well those views are evidenced — the views themselves are your problem.",
+  'opinion':       "This is an opinion piece - just that, someone's opinion. The truth score reflects how well it's evidenced. Keep that in mind when reading the result.",
   'press-release': "A press release: professionally one-sided. Scoring proceeds, though don't expect much ragebait.",
 };
 
@@ -746,7 +746,7 @@ function renderScoreCard(type, result) {
     const bullets = reasons.map(r =>
       `<div class="reasoning-bullet" style="border-left:2px solid ${color}40"><p class="reasoning-text">${r}</p></div>`
     ).join('');
-    const note = type === 'truth' ? `<p class="truth-note">NOTE: Truth scoring reflects journalistic sourcing quality — not live fact-checking against external databases.</p>` : '';
+    const note = type === 'truth' ? `<p class="truth-note">NOTE: Truth scoring reflects journalistic sourcing quality, not live fact-checking against external databases.</p>` : '';
     body = `<div class="score-card-body">${caveatHtml}${bullets}${note}</div>`;
   }
 
@@ -847,7 +847,7 @@ function screenAnalysing(isScreenshot) {
 function screenAccess() {
   const isPaywall = state.detectedAccess === 'paywall';
   const hashNote  = (!isPaywall && isHashUrl(state.url))
-    ? `<p class="state-body-sm">This URL uses a hash-based identifier — a screenshot is the only option.</p>` : '';
+    ? `<p class="state-body-sm">This URL uses a hash-based identifier. A screenshot is the only option.</p>` : '';
   return `<div class="card">
     <span class="state-tag" style="background:${isPaywall?'#fef2f2':'#fff7ed'};color:${isPaywall?'#dc2626':'#ea580c'};border:1px solid ${isPaywall?'#fca5a5':'#fed7aa'}">
       ${isPaywall ? '🔒 Subscription paywall' : '🚧 Automated access blocked'}
@@ -900,9 +900,9 @@ function screenResult() {
   if (!r) return '';
 
   const demoBanner = state.isDemo
-    ? `<div class="banner banner-demo"><p>EXAMPLE RESULT — paste a real URL or upload screenshots for live analysis</p></div>` : '';
+    ? `<div class="banner banner-demo"><p>EXAMPLE RESULT. Paste a real URL or upload screenshots for live analysis.</p></div>` : '';
   const ssBanner = r.screenshotMode
-    ? `<div class="banner banner-screenshot"><p>SCREENSHOT MODE — Truth and Clickbait are indicative (~). Ragebait is most reliable.</p></div>` : '';
+    ? `<div class="banner banner-screenshot"><p>SCREENSHOT MODE. Truth and Clickbait are indicative (~). Ragebait is most reliable.</p></div>` : '';
   const headline = r.headline ? `<p class="headline-quote">"${r.headline}"</p>` : '';
   const pub      = r.publication ? `<p class="publication-tag">${r.publication.toUpperCase()}</p>` : '';
 
@@ -925,7 +925,7 @@ function screenResult() {
     <p class="card-label" style="text-align:center;margin-bottom:10px">Content Fingerprint</p>
     ${renderRadar(r.scores, r.screenshotMode)}
   </div>
-  <p class="card-label" style="margin-bottom:10px">Breakdown — tap to expand</p>
+  <p class="card-label" style="margin-bottom:10px">Breakdown - tap to expand</p>
   ${renderScoreCard('truth',     r)}
   ${renderScoreCard('clickbait', r)}
   ${renderScoreCard('ragebait',  r)}
@@ -936,7 +936,7 @@ function screenResult() {
 
 function screenError() {
   return `<p class="error-heading">ANALYSIS FAILED</p>
-  <p class="error-body">The screenshot couldn't be read clearly enough to score. Try a cleaner screenshot — the full article view works best.</p>
+  <p class="error-body">The screenshot couldn't be read clearly enough to score. Try a cleaner one - the full article view works best.</p>
   <button class="btn-primary" onclick="resetToInput()">TRY AGAIN</button>`;
 }
 
