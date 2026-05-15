@@ -324,11 +324,11 @@ const FORMAT_LABELS = {
   'press-release': 'Press release', 'social': 'Social media post', 'video': 'Video content',
 };
 const FORMAT_MESSAGES = {
-  'live-blog':     "Live blogs update continuously — there's no fixed article to score against a headline. This format breaks the model.",
-  'social':        "Social posts have no headline-to-body structure to analyse. Use the screenshot option below — ragebait scoring is still reliable.",
-  'video':         "Video content can't be read as text. Screenshot a thumbnail or description and upload it below.",
-  'opinion':       "Opinion piece. The author is arguing a position — truth scores reflect how well they back it up, not whether they're right.",
-  'press-release': "A press release: one-sided by design. Scoring proceeds, though don't expect much ragebait.",
+  'live-blog':     "A live blog. The headline is provisional, the facts are still arriving, and there's nothing fixed to score against. Not for us.",
+  'social':        "A social post — no headline to lie, no article to fail to deliver on it. Screenshot it below; ragebait scoring still works fine.",
+  'video':         "We read text, not frames. Screenshot the title or description and upload it.",
+  'opinion':       "A columnist with views. Truth scores reflect how well those views are evidenced — the views themselves are your problem.",
+  'press-release': "A press release: professionally one-sided. Scoring proceeds, though don't expect much ragebait.",
 };
 
 // ─── SCORE BAND HELPERS ───────────────────────────────────────────────────────
@@ -853,8 +853,8 @@ function screenAccess() {
       ${isPaywall ? '🔒 Subscription paywall' : '🚧 Automated access blocked'}
     </span>
     <p class="state-body">${isPaywall
-      ? "This one's behind a paywall — automated reading isn't possible. Screenshot the article and upload it below."
-      : "This site blocks automated access. Screenshot the article and upload it below."}</p>
+      ? "This one wants money before it'll talk. Screenshot the article and upload it below."
+      : "This site keeps robots out. Screenshot the article and upload it below."}</p>
     ${hashNote}
   </div>
   <p class="explainer-label" style="margin-top:4px;margin-bottom:8px">UPLOAD SCREENSHOTS</p>
@@ -887,8 +887,8 @@ function screenCombined() {
     <div style="margin-bottom:12px">${tags}</div>
     <p class="state-body">${FORMAT_MESSAGES[fmt] || ''}</p>
     <p class="state-body-sm">${acc==='paywall'
-      ? "It's also paywalled, so screenshot the article and upload it below."
-      : 'It also blocks automated access — screenshot the article and upload it below.'}</p>
+      ? "It's also paywalled. Screenshot it and upload below."
+      : "It also keeps robots out. Screenshot it and upload below."}</p>
   </div>
   <p class="explainer-label" style="margin-top:4px;margin-bottom:8px">UPLOAD SCREENSHOTS</p>
   ${renderUploadZone('Screenshot the article and upload it')}
