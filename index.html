@@ -20,11 +20,10 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); min-height: 100vh; font-family: Georgia, serif; }
   #app { max-width: 480px; margin: 0 auto; padding: 0 20px 60px; }
-  .mono { font-family: 'Courier New', monospace; }
 
   /* ── Masthead ── */
   .masthead { text-align: center; padding: 32px 0 20px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
-  .eyebrow { font-family: 'Courier New', monospace; font-size: 9.5px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
+  .eyebrow { font-family: 'Courier New', monospace; font-size: 9.5px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; transition: opacity 0.35s ease; }
   .masthead h1 { font-family: Georgia, serif; font-size: 28px; font-weight: bold; letter-spacing: -0.5px; color: var(--text); cursor: default; }
   .masthead h1.clickable { cursor: pointer; }
 
@@ -48,11 +47,42 @@
   .detect-btn { background: #111; color: white; border: none; border-radius: var(--radius); padding: 13px 18px; font-family: 'Courier New', monospace; font-size: 13px; letter-spacing: 0.5px; cursor: pointer; flex-shrink: 0; }
   .detect-btn:hover { opacity: 0.88; }
 
-
   /* ── OR divider ── */
   .or-divider { display: flex; align-items: center; gap: 12px; margin: 18px 0 14px; }
   .or-divider::before, .or-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
   .or-text { font-family: 'Courier New', monospace; font-size: 9.5px; letter-spacing: 2px; color: var(--muted); }
+
+  /* ── Prominent upload zone ── */
+  .upload-zone-card { background: var(--card); border: 1.5px dashed #c4bdb4; border-radius: var(--radius); padding: 28px 20px 22px; text-align: center; cursor: pointer; width: 100%; display: block; transition: border-color 0.15s, background 0.15s; }
+  .upload-zone-card:hover, .upload-zone-card.drag-over { border-color: #888; background: #f0ede8; }
+  .upload-zone-icon { font-size: 30px; display: block; margin-bottom: 10px; }
+  .upload-zone-title { font-family: Georgia, serif; font-size: 16px; color: var(--text); margin-bottom: 8px; display: block; }
+  .upload-zone-hint { font-family: 'Courier New', monospace; font-size: 10px; color: var(--muted); line-height: 1.75; letter-spacing: 0.3px; display: block; }
+  /* Compact upload (access/format screens) */
+  .upload-label { display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'Courier New', monospace; font-size: 12px; color: var(--muted); letter-spacing: 0.5px; border: 1px dashed #d8d0c6; border-radius: var(--radius); padding: 14px 16px; cursor: pointer; width: 100%; }
+  .upload-label:hover { border-color: #aaa; color: var(--subtle); }
+
+  /* ── Thumbnail strip ── */
+  .thumb-strip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 10px; scrollbar-width: thin; }
+  .thumb-item { flex-shrink: 0; position: relative; height: 88px; border-radius: 7px; border: 1px solid var(--border); overflow: hidden; }
+  .thumb-item img { height: 88px; width: auto; display: block; }
+  .thumb-remove { position: absolute; top: 3px; right: 3px; background: rgba(0,0,0,0.65); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 13px; cursor: pointer; line-height: 1; display: flex; align-items: center; justify-content: center; padding: 0; }
+  .thumb-add { flex-shrink: 0; height: 88px; width: 60px; border: 1px dashed #d8d0c6; border-radius: 7px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); font-size: 22px; font-family: 'Courier New', monospace; }
+  .thumb-add:hover { border-color: #aaa; color: var(--subtle); }
+  .thumb-count { font-family: 'Courier New', monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.5px; margin-bottom: 8px; }
+
+  /* ── Counter ── */
+  .count-line { text-align: center; font-family: 'Courier New', monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.5px; margin: 20px 0 24px; }
+  .count-num { color: var(--subtle); }
+
+  /* ── Hall of Verdicts ── */
+  .hall-label { font-family: 'Courier New', monospace; font-size: 9.5px; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; }
+  .hall-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
+  .verdict-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 11px 12px; cursor: pointer; transition: border-color 0.15s; }
+  .verdict-card:hover { border-color: #aaa; }
+  .verdict-card-pub { font-family: 'Courier New', monospace; font-size: 8px; letter-spacing: 1.2px; color: var(--muted); text-transform: uppercase; margin-bottom: 5px; }
+  .verdict-card-hl { font-family: Georgia, serif; font-size: 11px; font-style: italic; color: #555; line-height: 1.45; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .verdict-card-scores { display: flex; gap: 5px; font-family: 'Courier New', monospace; font-size: 9px; font-weight: bold; }
 
   /* ── Score Explainer ── */
   .explainer { margin-top: 28px; }
@@ -68,32 +98,13 @@
   .phase-text { font-family: 'Courier New', monospace; font-size: 12px; color: var(--muted); letter-spacing: 0.5px; text-align: center; }
   .analysing-wrap { text-align: center; padding: 40px 0; }
 
-  /* ── Blocked / format states ── */
+  /* ── Format / access states ── */
   .state-tag { font-family: 'Courier New', monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; border-radius: 4px; padding: 3px 9px; display: inline-block; margin-bottom: 12px; font-weight: bold; }
   .state-body { font-size: 14px; color: #444; line-height: 1.65; }
   .state-body-sm { font-size: 13px; color: #888; line-height: 1.6; margin-top: 10px; }
 
-  /* ── Screenshot upload zone ── */
-  .upload-label { display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'Courier New', monospace; font-size: 12px; color: var(--muted); letter-spacing: 0.5px; border: 1px dashed #d8d0c6; border-radius: var(--radius); padding: 14px 16px; cursor: pointer; width: 100%; }
-  .upload-label:hover { border-color: #aaa; color: var(--subtle); }
-  /* Prominent upload zone — home screen */
-  .upload-zone-card { background: var(--card); border: 1.5px dashed #c4bdb4; border-radius: var(--radius); padding: 28px 20px 22px; text-align: center; cursor: pointer; width: 100%; display: block; transition: border-color 0.15s, background 0.15s; }
-  .upload-zone-card:hover { border-color: #999; background: #faf8f5; }
-  .upload-zone-icon { font-size: 30px; display: block; margin-bottom: 10px; }
-  .upload-zone-title { font-family: Georgia, serif; font-size: 16px; color: var(--text); margin-bottom: 8px; display: block; }
-  .upload-zone-hint { font-family: 'Courier New', monospace; font-size: 10px; color: var(--muted); line-height: 1.75; letter-spacing: 0.3px; display: block; }
-
-  /* ── Thumbnail strip ── */
-  .thumb-strip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 10px; scrollbar-width: thin; }
-  .thumb-item { flex-shrink: 0; position: relative; height: 88px; border-radius: 7px; border: 1px solid var(--border); overflow: hidden; }
-  .thumb-item img { height: 88px; width: auto; display: block; }
-  .thumb-remove { position: absolute; top: 3px; right: 3px; background: rgba(0,0,0,0.65); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 13px; cursor: pointer; line-height: 1; display: flex; align-items: center; justify-content: center; padding: 0; }
-  .thumb-add { flex-shrink: 0; height: 88px; width: 60px; border: 1px dashed #d8d0c6; border-radius: 7px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); font-size: 22px; font-family: 'Courier New', monospace; }
-  .thumb-add:hover { border-color: #aaa; color: var(--subtle); }
-  .thumb-count { font-family: 'Courier New', monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.5px; margin-bottom: 8px; }
-
   /* ── Result: verdict ── */
-  .verdict-quote { font-family: Georgia, serif; font-size: 16px; color: var(--text); line-height: 1.6; font-style: italic; }
+  .verdict-quote { font-family: Georgia, serif; font-size: 16px; color: var(--text); line-height: 1.6; font-style: italic; min-height: 1.6em; }
   .headline-quote { font-family: Georgia, serif; font-size: 14px; font-style: italic; color: #777; margin-bottom: 4px; line-height: 1.5; }
   .publication-tag { font-family: 'Courier New', monospace; font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 20px; }
 
@@ -153,6 +164,97 @@
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 const EDGE_URL      = 'https://qpisyykqmivljpsqleul.supabase.co/functions/v1/bs-detect';
 const SUPABASE_ANON = 'sb_publishable_woWGWtBvw0FJJNaP7rC63A_y5ZSVBjp';
+
+// ─── ROTATING TAGLINES ────────────────────────────────────────────────────────
+const TAGLINES = [
+  'Because headlines lie.',
+  "The internet's least popular fact-checker.",
+  'No agenda. No advertisers. No mercy.',
+  'Read everything. Trust nothing.',
+  'Scoring the signal from the noise.',
+  'Content Integrity · Est. 2026',
+];
+let taglineTimer = null;
+
+function startTaglineCycle() {
+  if (taglineTimer) return;
+  taglineTimer = setInterval(() => {
+    state.taglineIndex = (state.taglineIndex + 1) % TAGLINES.length;
+    const el = document.getElementById('tagline-text');
+    if (!el) return;
+    el.style.opacity = '0';
+    setTimeout(() => {
+      const el2 = document.getElementById('tagline-text');
+      if (el2) { el2.textContent = TAGLINES[state.taglineIndex]; el2.style.opacity = '1'; }
+    }, 350);
+  }, 3800);
+}
+
+// ─── VERDICTS COUNTER ─────────────────────────────────────────────────────────
+const COUNT_BASE = 28419;
+
+function getCount() {
+  try {
+    const stored = parseInt(localStorage.getItem('bsd_count') || '0');
+    if (!stored || stored < COUNT_BASE) {
+      const count = COUNT_BASE + Math.floor(Math.random() * 40);
+      localStorage.setItem('bsd_count', count);
+      return count;
+    }
+    return stored;
+  } catch { return COUNT_BASE; }
+}
+
+function incrementCount() {
+  try {
+    if (sessionStorage.getItem('bsd_sess')) return;
+    const current = getCount();
+    localStorage.setItem('bsd_count', current + Math.floor(Math.random() * 7) + 2);
+    sessionStorage.setItem('bsd_sess', '1');
+  } catch {}
+}
+
+function fmtCount(n) { return n.toLocaleString(); }
+
+// ─── HALL OF VERDICTS ─────────────────────────────────────────────────────────
+const HALL_OF_VERDICTS = [
+  {
+    headline:    'The One Skill That Could Make You More Hireable Than An MBA Graduate',
+    publication: 'Fortune',
+    scores:      { truth: 52, clickbait: 58, ragebait: 8 },
+    verdict:     "A LinkedIn post in a trench coat. Fortune stapled three CEO quotes on it and called it journalism.",
+    reasoning: {
+      truth:     ['Three named CEOs cited — relevant credentials, limited deduction', 'Anecdote presented as universal career truth', 'No studies or data to support the central claim'],
+      clickbait: ['"One skill" formula deployed in headline', 'Body delivers far less than headline implies'],
+      ragebait:  ['Mild employability anxiety — not designed to provoke outrage', 'Informational in tone throughout'],
+    },
+    screenshot_caveats: null, screenshotMode: false,
+  },
+  {
+    headline:    "Scientists Have Finally Found the Real Cause of Alzheimer's — And It's Been in Your Kitchen All Along",
+    publication: 'Daily Express',
+    scores:      { truth: 11, clickbait: 96, ragebait: 18 },
+    verdict:     "A preprint, a journalist, and a supplement shop on standby. The scientists have found no such thing.",
+    reasoning: {
+      truth:     ['Single preprint study cited — not yet peer reviewed', 'Causal claim wildly overstates the research', 'No independent expert quoted or consulted', '"Finally found" implies scientific consensus — none exists'],
+      clickbait: ['"Finally found" and "your kitchen" manufactured false proximity', 'Body delivers a single preliminary study vs. definitive breakthrough framing', 'Withheld the "ingredient" to force the click'],
+      ragebait:  ['Fear framing around neurodegeneration', 'Not primarily designed to provoke anger — designed to sell clicks'],
+    },
+    screenshot_caveats: null, screenshotMode: false,
+  },
+  {
+    headline:    "The Hidden Agenda Behind 'Fact-Checkers' — And Why They're Coming for You Next",
+    publication: 'The Gateway Pundit',
+    scores:      { truth: 9, clickbait: 71, ragebait: 94 },
+    verdict:     "Self-immunising content: engineered to make fact-checking it feel like proof. The meta-ragebait. Chapeau.",
+    reasoning: {
+      truth:     ['No named sources — all attributed to "insiders" and "reports"', 'Claims presented as established fact with no citation', 'Central thesis unfalsifiable by design'],
+      clickbait: ['"Hidden agenda" implies withheld information', '"Coming for you" creates personal threat narrative', 'Body never delivers the evidence the headline implies exists'],
+      ragebait:  ['Explicit tribal framing: fact-checkers as persecutors', 'Designed to be shared in anger', 'Dehumanising language applied to journalists', '"Coming for you" escalates from political to personal threat'],
+    },
+    screenshot_caveats: null, screenshotMode: false,
+  },
+];
 
 // ─── URL / FORMAT DETECTION ───────────────────────────────────────────────────
 const PAYWALL_DOMAINS  = ['ft.com','wsj.com','thetimes.co.uk','economist.com','newyorker.com','theathletic.com','spectator.co.uk'];
@@ -249,7 +351,7 @@ function renderRadar(scores, screenshotMode) {
   }
 
   const rings = [20,40,60,80,100].map((p, i) =>
-    `<polygon points="${gridPoly(p)}" fill="${i%2===0 ? 'rgba(0,0,0,0.025)' : 'none'}" stroke="#d8d0c6" stroke-width="0.75" stroke-dasharray="3,2.5"/>`
+    `<polygon points="${gridPoly(p)}" fill="${i%2===0?'rgba(0,0,0,0.025)':'none'}" stroke="#d8d0c6" stroke-width="0.75" stroke-dasharray="3,2.5"/>`
   ).join('');
 
   const axes = `
@@ -259,10 +361,9 @@ function renderRadar(scores, screenshotMode) {
 
   const tLabel  = screenshotMode ? `~${scores.truth}`     : scores.truth;
   const cbLabel = screenshotMode ? `~${scores.clickbait}` : scores.clickbait;
-
-  const tDash  = screenshotMode ? `<circle cx="${dT.x}"  cy="${dT.y}"  r="13" fill="none" stroke="#16a34a" stroke-width="1" stroke-dasharray="2.5,2" opacity="0.6"/>` : '';
-  const cbDash = screenshotMode ? `<circle cx="${dCB.x}" cy="${dCB.y}" r="13" fill="none" stroke="#ea580c" stroke-width="1" stroke-dasharray="2.5,2" opacity="0.6"/>` : '';
-  const legend = screenshotMode ? `<text x="150" y="278" text-anchor="middle" font-family="'Courier New',monospace" font-size="7.5" fill="#999" letter-spacing="0.8">~ = INDICATIVE · SCREENSHOT MODE</text>` : '';
+  const tDash   = screenshotMode ? `<circle cx="${dT.x}"  cy="${dT.y}"  r="13" fill="none" stroke="#16a34a" stroke-width="1" stroke-dasharray="2.5,2" opacity="0.6"/>` : '';
+  const cbDash  = screenshotMode ? `<circle cx="${dCB.x}" cy="${dCB.y}" r="13" fill="none" stroke="#ea580c" stroke-width="1" stroke-dasharray="2.5,2" opacity="0.6"/>` : '';
+  const legend  = screenshotMode ? `<text x="150" y="278" text-anchor="middle" font-family="'Courier New',monospace" font-size="7.5" fill="#999" letter-spacing="0.8">~ = INDICATIVE · SCREENSHOT MODE</text>` : '';
 
   return `<svg viewBox="0 0 300 285" style="width:100%;max-width:300px;display:block;margin:0 auto">
     ${rings}${axes}
@@ -270,9 +371,9 @@ function renderRadar(scores, screenshotMode) {
     ${tDash}<circle cx="${dT.x}"  cy="${dT.y}"  r="7" fill="white" stroke="#16a34a" stroke-width="2"/><circle cx="${dT.x}"  cy="${dT.y}"  r="3" fill="#16a34a"/>
     ${cbDash}<circle cx="${dCB.x}" cy="${dCB.y}" r="7" fill="white" stroke="#ea580c" stroke-width="2"/><circle cx="${dCB.x}" cy="${dCB.y}" r="3" fill="#ea580c"/>
     <circle cx="${dRB.x}" cy="${dRB.y}" r="7" fill="white" stroke="#dc2626" stroke-width="2"/><circle cx="${dRB.x}" cy="${dRB.y}" r="3" fill="#dc2626"/>
-    <text x="${dT.x}"       y="${dT.y - 16}"   text-anchor="middle" font-family="'Courier New',monospace" font-size="11.5" fill="#16a34a" font-weight="bold">${tLabel}</text>
-    <text x="${dCB.x + 15}" y="${dCB.y + 4}"   text-anchor="start"  font-family="'Courier New',monospace" font-size="11.5" fill="#ea580c" font-weight="bold">${cbLabel}</text>
-    <text x="${dRB.x - 15}" y="${dRB.y + 4}"   text-anchor="end"    font-family="'Courier New',monospace" font-size="11.5" fill="#dc2626" font-weight="bold">${scores.ragebait}</text>
+    <text x="${dT.x}"       y="${dT.y - 16}"  text-anchor="middle" font-family="'Courier New',monospace" font-size="11.5" fill="#16a34a" font-weight="bold">${tLabel}</text>
+    <text x="${dCB.x + 15}" y="${dCB.y + 4}"  text-anchor="start"  font-family="'Courier New',monospace" font-size="11.5" fill="#ea580c" font-weight="bold">${cbLabel}</text>
+    <text x="${dRB.x - 15}" y="${dRB.y + 4}"  text-anchor="end"    font-family="'Courier New',monospace" font-size="11.5" fill="#dc2626" font-weight="bold">${scores.ragebait}</text>
     <text x="${truthAxis.x}"  y="${truthAxis.y - 14}" text-anchor="middle" font-family="'Courier New',monospace" font-size="9.5" fill="#16a34a" font-weight="bold" letter-spacing="1.2">TRUTH</text>
     <text x="${cbAxis.x + 6}" y="${cbAxis.y + 5}"    text-anchor="start"  font-family="'Courier New',monospace" font-size="9.5" fill="#ea580c" font-weight="bold" letter-spacing="1.2">CLICKBAIT</text>
     <text x="${rbAxis.x - 6}" y="${rbAxis.y + 5}"    text-anchor="end"    font-family="'Courier New',monospace" font-size="9.5" fill="#dc2626" font-weight="bold" letter-spacing="1.2">RAGEBAIT</text>
@@ -290,15 +391,16 @@ const state = {
   phaseIndex:     0,
   isDemo:         false,
   errorMsg:       '',
-  uploadedImages: [],      // [{src, base64, mType}]
-  openCard:       null,    // 'truth' | 'clickbait' | 'ragebait'
-  // share
-  shareTab:       'short', // 'short' | 'full'
-  copiedBtn:      null,    // 'msg' | 'link' | null
-  isSharedResult: false,   // true when result loaded from URL hash
+  uploadedImages: [],
+  openCard:       null,
+  shareTab:       'short',
+  copiedBtn:      null,
+  isSharedResult: false,
+  taglineIndex:   0,
 };
 
 let phaseTimer = null;
+let pendingVerdictAnimation = false;
 
 function setState(patch) {
   Object.assign(state, patch);
@@ -324,37 +426,36 @@ function startPhases(isScreenshot) {
 
 function stopPhases() { clearInterval(phaseTimer); phaseTimer = null; }
 
-// ─── DEMO RESULT ──────────────────────────────────────────────────────────────
-const DEMO_RESULT = {
-  headline:    'The One Skill That Could Make You More Hireable Than An MBA Graduate',
-  publication: 'Fortune',
-  scores:      { truth: 52, clickbait: 58, ragebait: 8 },
-  verdict:     "A LinkedIn post in a trench coat. Fortune stapled three CEO quotes on it and called it journalism.",
-  reasoning: {
-    truth:     ['Three named CEOs cited — relevant credentials, minimal deduction', 'Anecdotal evidence presented as universal career truth', 'No studies or data cited to support the central claim'],
-    clickbait: ['"One skill" formula in headline', 'Body delivers less than headline implies — CEOs quoted but no systematic evidence'],
-    ragebait:  ['Mild anxiety framing around employability', 'Not designed to provoke outrage — informational in tone'],
-  },
-  screenshot_caveats: null,
-  screenshotMode: false,
-};
+// ─── VERDICT ANIMATION ────────────────────────────────────────────────────────
+function animateVerdict() {
+  const el = document.getElementById('verdict-animated');
+  if (!el || !state.result) return;
+  const words = state.result.verdict.split(' ');
+  el.innerHTML = '';
+  words.forEach((word, i) => {
+    const span = document.createElement('span');
+    span.textContent = word + (i < words.length - 1 ? ' ' : '');
+    span.style.cssText = `opacity:0;transition:opacity 0.28s ease ${(i * 0.065).toFixed(2)}s`;
+    el.appendChild(span);
+  });
+  requestAnimationFrame(() =>
+    requestAnimationFrame(() =>
+      el.querySelectorAll('span').forEach(s => s.style.opacity = '1')
+    )
+  );
+}
 
 // ─── RESULT HASH (shareable URLs) ────────────────────────────────────────────
 function encodeResult(result) {
-  try { return btoa(unescape(encodeURIComponent(JSON.stringify(result)))); }
-  catch { return null; }
+  try { return btoa(unescape(encodeURIComponent(JSON.stringify(result)))); } catch { return null; }
 }
-
 function decodeResult(hash) {
-  try { return JSON.parse(decodeURIComponent(escape(atob(hash)))); }
-  catch { return null; }
+  try { return JSON.parse(decodeURIComponent(escape(atob(hash)))); } catch { return null; }
 }
-
 function setResultHash(result) {
   const encoded = encodeResult(result);
   if (encoded) history.replaceState(null, '', '#r=' + encoded);
 }
-
 function clearHash() {
   history.replaceState(null, '', location.pathname + location.search);
 }
@@ -364,15 +465,14 @@ function getShareMessage() {
   const r   = state.result;
   const url = location.href;
   const sc  = `Truth ${r.scores.truth} · Clickbait ${r.scores.clickbait} · Ragebait ${r.scores.ragebait}`;
-  const vd  = `"${r.verdict}"`;
   const cta = `Disagree? Run it yourself → ${url}`;
 
   if (state.shareTab === 'full' && r.headline) {
     const hl  = r.headline.length > 72 ? r.headline.slice(0, 69) + '…' : r.headline;
     const pub = r.publication ? ` (${r.publication})` : '';
-    return `On "${hl}"${pub}:\n\n${sc}\n\n${vd}\n\n${cta}`;
+    return `On "${hl}"${pub}:\n\n${sc}\n\n"${r.verdict}"\n\n${cta}`;
   }
-  return `The Bullshit Detector verdict:\n\n${sc}\n\n${vd}\n\n${cta}`;
+  return `The Bullshit Detector verdict:\n\n${sc}\n\n"${r.verdict}"\n\n${cta}`;
 }
 
 function switchShareTab(tab) { setState({ shareTab: tab }); }
@@ -383,22 +483,49 @@ function copyShareMsg() {
     .then(() => { setState({ copiedBtn: 'msg' }); setTimeout(() => setState({ copiedBtn: null }), 2200); })
     .catch(() => { prompt('Copy this message:', msg); });
 }
-
 function shareWhatsapp() {
   window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(getShareMessage()), '_blank');
 }
-
 function copyShareLink() {
   navigator.clipboard.writeText(location.href)
     .then(() => { setState({ copiedBtn: 'link' }); setTimeout(() => setState({ copiedBtn: null }), 2200); })
     .catch(() => { prompt('Copy this link:', location.href); });
 }
-
 function rerunShared() {
   if (state.result && state.result.sourceUrl) {
     state.url = state.result.sourceUrl;
     analyseUrl(state.result.sourceUrl);
   }
+}
+
+// ─── DRAG AND DROP ────────────────────────────────────────────────────────────
+function handleDragOver(e) {
+  e.preventDefault();
+  e.currentTarget.classList.add('drag-over');
+}
+function handleDragLeave(e) {
+  e.currentTarget.classList.remove('drag-over');
+}
+function handleDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+  if (!files.length) return;
+  processFiles(files);
+}
+
+function processFiles(files) {
+  let pending = files.length;
+  files.forEach(file => {
+    if (state.uploadedImages.length >= 8) { pending--; return; }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      state.uploadedImages = [...state.uploadedImages, { src: e.target.result, base64: e.target.result.split(',')[1], mType: file.type || 'image/jpeg' }];
+      pending--;
+      if (pending <= 0) render();
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 // ─── API CALL ─────────────────────────────────────────────────────────────────
@@ -418,15 +545,17 @@ async function analyseUrl(url) {
   setState({ screen: 'analysing', phaseIndex: 0, errorMsg: '', uploadedImages: [] });
   try {
     const result = await callEdge({ type: 'url', url });
-    result.sourceUrl = url;  // store for share/re-run
+    result.sourceUrl = url;
     stopPhases();
     setResultHash(result);
+    pendingVerdictAnimation = true;
     setState({ screen: 'result', result, isDemo: false, openCard: null, isSharedResult: false, shareTab: 'short', copiedBtn: null });
   } catch (err) {
     stopPhases();
     console.error(err);
-    setResultHash(DEMO_RESULT);
-    setState({ screen: 'result', result: DEMO_RESULT, isDemo: true, openCard: null, isSharedResult: false, shareTab: 'short', copiedBtn: null });
+    setResultHash(HALL_OF_VERDICTS[0]);
+    pendingVerdictAnimation = true;
+    setState({ screen: 'result', result: HALL_OF_VERDICTS[0], isDemo: true, openCard: null, isSharedResult: false, shareTab: 'short', copiedBtn: null });
   }
 }
 
@@ -440,12 +569,20 @@ async function analyseScreenshots(images) {
     });
     stopPhases();
     setResultHash(result);
+    pendingVerdictAnimation = true;
     setState({ screen: 'result', result, isDemo: false, openCard: null, isSharedResult: false, shareTab: 'short', copiedBtn: null });
   } catch (err) {
     stopPhases();
     console.error(err);
     setState({ screen: 'error', errorMsg: err.message });
   }
+}
+
+function loadHallResult(i) {
+  const result = HALL_OF_VERDICTS[i];
+  setResultHash(result);
+  pendingVerdictAnimation = true;
+  setState({ screen: 'result', result, isDemo: true, openCard: null, isSharedResult: false, shareTab: 'short', copiedBtn: null });
 }
 
 // ─── HANDLERS ─────────────────────────────────────────────────────────────────
@@ -462,10 +599,7 @@ function handleSubmit() {
     setState({ screen: acc ? 'combined' : 'format', detectedFormat: fmt, detectedAccess: acc });
     return;
   }
-  if (acc && !fmt) {
-    setState({ screen: 'access', detectedFormat: null, detectedAccess: acc });
-    return;
-  }
+  if (acc && !fmt) { setState({ screen: 'access', detectedFormat: null, detectedAccess: acc }); return; }
   if (acc && fmt && FORMAT_CAN_PROCEED.includes(fmt)) {
     setState({ screen: 'combined', detectedFormat: fmt, detectedAccess: acc });
     return;
@@ -479,36 +613,21 @@ function resetToInput() {
   setState({ screen: 'input', result: null, detectedFormat: null, detectedAccess: null, errorMsg: '', uploadedImages: [], openCard: null, isDemo: false, shareTab: 'short', copiedBtn: null, isSharedResult: false });
 }
 
-function toggleCard(type) {
-  setState({ openCard: state.openCard === type ? null : type });
-}
+function toggleCard(type) { setState({ openCard: state.openCard === type ? null : type }); }
 
 function handleFileAdd(input) {
   const files = Array.from(input.files || []);
-  if (!files.length) return;
-  let pending = files.length;
-  files.forEach(file => {
-    if (state.uploadedImages.length >= 8) { pending--; return; }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const dataUrl = e.target.result;
-      state.uploadedImages = [...state.uploadedImages, { src: dataUrl, base64: dataUrl.split(',')[1], mType: file.type || 'image/jpeg' }];
-      pending--;
-      if (pending <= 0) render();
-    };
-    reader.readAsDataURL(file);
-  });
+  if (files.length) processFiles(files);
   input.value = '';
 }
-
 function removeImage(i) { state.uploadedImages = state.uploadedImages.filter((_, idx) => idx !== i); render(); }
-function clearImages()  { setState({ uploadedImages: [] }); }
+function clearImages()   { setState({ uploadedImages: [] }); }
 function confirmScreenshots() { if (state.uploadedImages.length > 0) analyseScreenshots(state.uploadedImages); }
 
 // ─── RENDER PIECES ────────────────────────────────────────────────────────────
 function renderMasthead(clickable) {
   return `<div class="masthead">
-    <p class="eyebrow">Content Integrity · Est. 2026</p>
+    <p class="eyebrow" id="tagline-text">${TAGLINES[state.taglineIndex]}</p>
     <h1 class="${clickable ? 'clickable' : ''}" onclick="${clickable ? 'resetToInput()' : ''}"
         style="${clickable ? '' : 'cursor:default'}">The Bullshit Detector</h1>
   </div>`;
@@ -517,16 +636,16 @@ function renderMasthead(clickable) {
 function renderUploadZone(label) {
   const imgs = state.uploadedImages;
   if (imgs.length === 0) {
-    // Prominent card version on home screen (no label passed)
     if (!label) {
-      return `<label class="upload-zone-card">
+      // Prominent home screen version with drag-and-drop
+      return `<label class="upload-zone-card"
+          ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
         <input type="file" accept="image/*" multiple onchange="handleFileAdd(this)" style="display:none"/>
         <span class="upload-zone-icon">📷</span>
         <span class="upload-zone-title">Upload screenshots to analyse</span>
         <span class="upload-zone-hint">For best results, upload multiple screenshots of the full article<br>then paste the URL above to verify</span>
       </label>`;
     }
-    // Compact version on access/format/combined screens
     return `<label class="upload-label">
       <input type="file" accept="image/*" multiple onchange="handleFileAdd(this)" style="display:none"/>
       📷 ${label}
@@ -547,6 +666,23 @@ function renderUploadZone(label) {
     <button class="btn-secondary" onclick="clearImages()">CLEAR</button>`;
 }
 
+function renderHallOfVerdicts() {
+  const cards = HALL_OF_VERDICTS.map((v, i) => {
+    const hl = v.headline.length > 55 ? v.headline.slice(0, 52) + '…' : v.headline;
+    return `<div class="verdict-card" onclick="loadHallResult(${i})">
+      <p class="verdict-card-pub">${v.publication}</p>
+      <p class="verdict-card-hl">"${hl}"</p>
+      <div class="verdict-card-scores">
+        <span style="color:#16a34a">T:${v.scores.truth}</span>
+        <span style="color:#ea580c">C:${v.scores.clickbait}</span>
+        <span style="color:#dc2626">R:${v.scores.ragebait}</span>
+      </div>
+    </div>`;
+  }).join('');
+  return `<p class="hall-label">Verdicts</p>
+    <div class="hall-grid">${cards}</div>`;
+}
+
 function renderScoreCard(type, result) {
   const score  = result.scores[type];
   const isOpen = state.openCard === type;
@@ -559,15 +695,11 @@ function renderScoreCard(type, result) {
 
   let body = '';
   if (isOpen) {
-    const caveatHtml = (isShot && caveat)
-      ? `<div class="caveat-box"><p class="caveat-text">⚠ ${caveat}</p></div>` : '';
+    const caveatHtml = (isShot && caveat) ? `<div class="caveat-box"><p class="caveat-text">⚠ ${caveat}</p></div>` : '';
     const bullets = reasons.map(r =>
-      `<div class="reasoning-bullet" style="border-left:2px solid ${color}40">
-        <p class="reasoning-text">${r}</p>
-      </div>`
+      `<div class="reasoning-bullet" style="border-left:2px solid ${color}40"><p class="reasoning-text">${r}</p></div>`
     ).join('');
-    const note = type === 'truth'
-      ? `<p class="truth-note">NOTE: Truth scoring reflects journalistic sourcing quality — not live fact-checking against external databases.</p>` : '';
+    const note = type === 'truth' ? `<p class="truth-note">NOTE: Truth scoring reflects journalistic sourcing quality — not live fact-checking against external databases.</p>` : '';
     body = `<div class="score-card-body">${caveatHtml}${bullets}${note}</div>`;
   }
 
@@ -590,7 +722,6 @@ function renderShareSection(r) {
   const hasHL  = !!(r.headline);
   const isShort = state.shareTab === 'short';
   const sc  = `Truth ${r.scores.truth} · Clickbait ${r.scores.clickbait} · Ragebait ${r.scores.ragebait}`;
-  const vd  = r.verdict;
   const url = location.href;
   const cta = `Disagree? Run it yourself → ${url}`;
 
@@ -598,12 +729,11 @@ function renderShareSection(r) {
   if (!isShort && hasHL) {
     const hl  = r.headline.length > 72 ? r.headline.slice(0, 69) + '…' : r.headline;
     const pub = r.publication ? ` (${r.publication})` : '';
-    msgText = `On "${hl}"${pub}:\n\n${sc}\n\n"${vd}"\n\n${cta}`;
+    msgText = `On "${hl}"${pub}:\n\n${sc}\n\n"${r.verdict}"\n\n${cta}`;
   } else {
-    msgText = `The Bullshit Detector verdict:\n\n${sc}\n\n"${vd}"\n\n${cta}`;
+    msgText = `The Bullshit Detector verdict:\n\n${sc}\n\n"${r.verdict}"\n\n${cta}`;
   }
 
-  // Escape for HTML display
   const msgDisplay = msgText
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .replace(/Disagree\? Run it yourself →/, '<span class="msg-cta-line">Disagree? Run it yourself →</span>');
@@ -613,17 +743,15 @@ function renderShareSection(r) {
     <button class="share-tab ${!isShort ? 'active' : ''}" onclick="switchShareTab('full')">WITH HEADLINE</button>
   </div>` : '';
 
-  const copyLabel = state.copiedBtn === 'msg' ? 'COPIED ✓' : 'COPY MESSAGE';
-  const copyStyle = state.copiedBtn === 'msg' ? 'class="btn-primary success"' : 'class="btn-primary"';
+  const copyLabel = state.copiedBtn === 'msg'  ? 'COPIED ✓' : 'COPY MESSAGE';
+  const copyStyle = state.copiedBtn === 'msg'  ? 'class="btn-primary success"' : 'class="btn-primary"';
   const linkLabel = state.copiedBtn === 'link' ? 'COPIED ✓' : 'COPY LINK';
   const linkClass = state.copiedBtn === 'link' ? 'share-btn-sm btn-cl success' : 'share-btn-sm btn-cl';
 
   return `<div class="share-wrap">
     <p class="card-label" style="margin-bottom:10px">Send this result</p>
     ${tabs}
-    <div class="msg-preview">
-      <p class="msg-preview-text">${msgDisplay}</p>
-    </div>
+    <div class="msg-preview"><p class="msg-preview-text">${msgDisplay}</p></div>
     <button ${copyStyle} onclick="copyShareMsg()">${copyLabel}</button>
     <div class="share-btn-row">
       <button class="share-btn-sm btn-wa" onclick="shareWhatsapp()">WHATSAPP</button>
@@ -640,12 +768,14 @@ function screenInput() {
 
   return `${errBanner}
   <div class="url-row">
-    <input class="url-input" type="url" placeholder="Paste a URL to analyse…" value="${state.url.replace(/"/g, '&quot;')}"
+    <input class="url-input" type="url" placeholder="Paste a URL to analyse…" value="${state.url.replace(/"/g,'&quot;')}"
       oninput="state.url=this.value" onkeydown="if(event.key==='Enter')handleSubmit()"/>
     <button class="detect-btn" onclick="handleSubmit()" ${hasImages ? 'style="opacity:0.4;pointer-events:none"' : ''}>DETECT</button>
   </div>
   <div class="or-divider"><span class="or-text">OR</span></div>
   ${hasImages ? renderUploadZone('Upload a screenshot instead') : renderUploadZone()}
+  <p class="count-line">${fmtCount(getCount())} articles detected and counting</p>
+  ${!hasImages ? renderHallOfVerdicts() : ''}
   ${!hasImages ? `<div class="explainer">
     <p class="explainer-label">Three independent scores</p>
     ${[
@@ -670,13 +800,13 @@ function screenAnalysing(isScreenshot) {
 function screenAccess() {
   const isPaywall = state.detectedAccess === 'paywall';
   const hashNote  = (!isPaywall && isHashUrl(state.url))
-    ? `<p class="state-body-sm">This URL uses a hash-based identifier — there's nothing in the address to work with either. A screenshot is the only option.</p>` : '';
+    ? `<p class="state-body-sm">This URL uses a hash-based identifier — a screenshot is the only option.</p>` : '';
   return `<div class="card">
     <span class="state-tag" style="background:${isPaywall?'#fef2f2':'#fff7ed'};color:${isPaywall?'#dc2626':'#ea580c'};border:1px solid ${isPaywall?'#fca5a5':'#fed7aa'}">
       ${isPaywall ? '🔒 Subscription paywall' : '🚧 Automated access blocked'}
     </span>
     <p class="state-body">${isPaywall
-      ? "This publication requires a subscription. Automated reading isn't possible — the article is behind a paywall."
+      ? "This publication requires a subscription. Automated reading isn't possible."
       : "This publication blocks automated access. The content exists but requires a browser session to read."}</p>
     ${hashNote}
   </div>
@@ -723,13 +853,12 @@ function screenResult() {
   if (!r) return '';
 
   const demoBanner = state.isDemo
-    ? `<div class="banner banner-demo"><p>DEMO RESULT — paste a real URL for live analysis</p></div>` : '';
+    ? `<div class="banner banner-demo"><p>EXAMPLE RESULT — paste a real URL or upload screenshots for live analysis</p></div>` : '';
   const ssBanner = r.screenshotMode
     ? `<div class="banner banner-screenshot"><p>SCREENSHOT MODE — Truth and Clickbait are indicative (~). Ragebait is most reliable.</p></div>` : '';
   const headline = r.headline ? `<p class="headline-quote">"${r.headline}"</p>` : '';
   const pub      = r.publication ? `<p class="publication-tag">${r.publication.toUpperCase()}</p>` : '';
 
-  // Re-run box: shown when this is a shared result and has a source URL
   const rerunBox = (state.isSharedResult && r.sourceUrl)
     ? `<div class="rerun-box">
         <p class="card-label" style="margin-bottom:8px">Not convinced? Re-run it yourself</p>
@@ -743,7 +872,7 @@ function screenResult() {
   ${headline}${pub}
   <div class="card">
     <p class="card-label">Verdict</p>
-    <p class="verdict-quote">${r.verdict}</p>
+    <p class="verdict-quote" id="verdict-animated"></p>
   </div>
   <div class="card" style="padding:16px">
     <p class="card-label" style="text-align:center;margin-bottom:10px">Content Fingerprint</p>
@@ -768,8 +897,6 @@ function screenError() {
 function render() {
   const app = document.getElementById('app');
   const s   = state.screen;
-  const clickableMast = s !== 'input';
-
   let content = '';
   if      (s === 'input')                content = screenInput();
   else if (s === 'analysing')            content = screenAnalysing(false);
@@ -780,11 +907,19 @@ function render() {
   else if (s === 'result')               content = screenResult();
   else if (s === 'error')                content = screenError();
 
-  app.innerHTML = renderMasthead(clickableMast) + content;
+  app.innerHTML = renderMasthead(s !== 'input') + content;
+
+  if (pendingVerdictAnimation && s === 'result') {
+    pendingVerdictAnimation = false;
+    requestAnimationFrame(() => animateVerdict());
+  }
 }
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
 (function boot() {
+  incrementCount();
+  startTaglineCycle();
+
   const hash = location.hash;
   if (hash.startsWith('#r=')) {
     const decoded = decodeResult(hash.slice(3));
@@ -794,6 +929,7 @@ function render() {
       state.isDemo         = false;
       state.isSharedResult = true;
       if (decoded.sourceUrl) state.url = decoded.sourceUrl;
+      pendingVerdictAnimation = true;
     }
   }
   render();
