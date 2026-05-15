@@ -145,6 +145,23 @@
   /* ── Re-run box ── */
   .rerun-box { background: #f8f7f4; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 12px; }
 
+  /* ── Claim Check cards ── */
+  .claim-checks-wrap { margin-bottom: 12px; }
+  .claim-check-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 8px; }
+  .claim-verdict-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .claim-section-label { font-family: 'Courier New',monospace; font-size: 8px; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; }
+  .claim-verdict-badge { font-family: 'Courier New',monospace; font-size: 9px; letter-spacing: 1px; font-weight: bold; padding: 2px 8px; border-radius: 3px; }
+  .cv-true         { background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; }
+  .cv-false        { background:#fef2f2; color:#dc2626; border:1px solid #fca5a5; }
+  .cv-misleading   { background:#fff7ed; color:#ea580c; border:1px solid #fed7aa; }
+  .cv-contested    { background:#fefce8; color:#ca8a04; border:1px solid #fde68a; }
+  .cv-unverifiable { background:#f9fafb; color:#888;    border:1px solid #e5e7eb; }
+  .claim-text { font-style: italic; font-size: 13px; color: #333; margin-bottom: 6px; line-height: 1.5; }
+  .claim-note { font-size: 12px; color: #666; line-height: 1.55; margin-bottom: 6px; }
+  .claim-source-link { font-family: 'Courier New',monospace; font-size: 9px; color: var(--muted); text-decoration: none; letter-spacing: 0.3px; }
+  .claim-source-link:hover { text-decoration: underline; }
+  .claim-internal-note { font-family: 'Courier New',monospace; font-size: 9px; color: #bbb; letter-spacing: 0.3px; }
+
   /* ── Banners ── */
   .banner { border-radius: 8px; padding: 8px 14px; margin-bottom: 14px; }
   .banner-demo { background: #fffbeb; border: 1px solid #fcd34d; }
@@ -445,8 +462,8 @@ function setState(patch) {
 }
 
 // ─── PHASE CYCLING ────────────────────────────────────────────────────────────
-const URL_PHASES        = ['Fetching article…','Reading content…','Comparing headline to body…','Checking source quality…','Scoring claims…','Writing verdict…'];
-const SCREENSHOT_PHASES = ['Reading screenshots…','Identifying publication…','Analysing content…','Scoring ragebait signals…','Writing verdict…'];
+const URL_PHASES        = ['Fetching article…','Reading content…','Comparing headline to body…','Checking source quality…','Scoring signals…','Cross-referencing sources…','Writing verdict…'];
+const SCREENSHOT_PHASES = ['Reading screenshots…','Identifying publication…','Analysing content…','Scoring ragebait signals…','Cross-referencing sources…','Writing verdict…'];
 
 function startPhases(isScreenshot) {
   clearInterval(phaseTimer);
@@ -492,6 +509,15 @@ function encodeResult(result) {
     verdict:       result.verdict,
     sourceUrl:     result.sourceUrl,
     screenshotMode: result.screenshotMode || false,
+    claim_checks:  result.claim_checks?.map(cc => ({
+      claim:   cc.claim,
+      verdict: cc.verdict,
+      note:    cc.note,
+      source:      cc.source     || null,
+      source_url:  cc.source_url || null,
+      confidence:  cc.confidence || null,
+      verified_by_search: cc.verified_by_search || false,
+    })) || [],
   };
   try { return btoa(unescape(encodeURIComponent(JSON.stringify(slim)))); } catch { return null; }
 }
@@ -886,6 +912,39 @@ function renderScoreCard(type, result) {
   </div>`;
 }
 
+// ─── CLAIM CHECK RENDER ───────────────────────────────────────────────────────
+const VERDICT_META = {
+  true:         { label: 'TRUE',        cls: 'cv-true' },
+  false:        { label: 'FALSE',       cls: 'cv-false' },
+  misleading:   { label: 'MISLEADING',  cls: 'cv-misleading' },
+  contested:    { label: 'CONTESTED',   cls: 'cv-contested' },
+  unverifiable: { label: 'UNVERIFIED',  cls: 'cv-unverifiable' },
+};
+
+function renderClaimChecks(r) {
+  if (!r.claim_checks || r.claim_checks.length === 0) return '';
+
+  const cards = r.claim_checks.map(cc => {
+    const v   = (cc.verdict || 'unverifiable').toLowerCase();
+    const meta = VERDICT_META[v] || VERDICT_META.unverifiable;
+    const sourceHtml = cc.source_url
+      ? `<a class="claim-source-link" href="${cc.source_url}" target="_blank" rel="noopener">Source: ${cc.source || cc.source_url} ↗</a>`
+      : `<span class="claim-internal-note">Claude knowledge · ${cc.confidence || 'medium'} confidence${cc.verified_by_search ? '' : ' · no fact-check found'}</span>`;
+
+    return `<div class="claim-check-card">
+      <div class="claim-verdict-row">
+        <span class="claim-section-label">Claim check</span>
+        <span class="claim-verdict-badge ${meta.cls}">${meta.label}</span>
+      </div>
+      <p class="claim-text">"${cc.claim}"</p>
+      ${cc.note ? `<p class="claim-note">${cc.note}</p>` : ''}
+      ${sourceHtml}
+    </div>`;
+  }).join('');
+
+  return `<div class="claim-checks-wrap">${cards}</div>`;
+}
+
 function renderShareSection(r) {
   const hasHL  = !!(r.headline);
   const isShort = state.shareTab === 'short';
@@ -1051,6 +1110,7 @@ function screenResult() {
   ${renderScoreCard('truth',     r)}
   ${renderScoreCard('clickbait', r)}
   ${renderScoreCard('ragebait',  r)}` : ''}
+  ${renderClaimChecks(r)}
   ${rerunBox}
   ${renderShareSection(r)}
   <button class="btn-secondary" onclick="resetToInput()">ANALYSE ANOTHER</button>`;
