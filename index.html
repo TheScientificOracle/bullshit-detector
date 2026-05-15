@@ -139,6 +139,8 @@
   .btn-cl { background: transparent; color: var(--subtle); border: 1px solid var(--border) !important; }
   .btn-cl:hover { border-color: #aaa !important; }
   .btn-cl.success { color: var(--truth); border-color: var(--truth) !important; }
+  .btn-img { background: transparent; color: var(--subtle); border: 1px solid var(--border) !important; }
+  .btn-img:hover { border-color: #aaa !important; }
 
   /* ── Re-run box ── */
   .rerun-box { background: #f8f7f4; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 12px; }
@@ -526,8 +528,119 @@ function copyShareMsg() {
     .then(() => { setState({ copiedBtn: 'msg' }); setTimeout(() => setState({ copiedBtn: null }), 2200); })
     .catch(() => { prompt('Copy this message:', msg); });
 }
-function shareWhatsapp() {
-  window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(getShareMessage()), '_blank');
+// ─── SHARE CARD (canvas) ──────────────────────────────────────────────────────
+function drawRadarCard(ctx, cx, cy, r, scores) {
+  const PI = Math.PI;
+  const TA = -PI/2, CA = -PI/2 + 2*PI/3, RA = -PI/2 + 4*PI/3;
+  const pt = (a, rad) => ({ x: cx + (rad??r)*Math.cos(a), y: cy + (rad??r)*Math.sin(a) });
+  const cl = v => Math.max(0, Math.min(100, v||0));
+
+  // Grid rings
+  [20,40,60,80,100].forEach((p,i) => {
+    const [t,c,b] = [TA,CA,RA].map(a => pt(a, r*p/100));
+    ctx.beginPath(); ctx.moveTo(t.x,t.y); ctx.lineTo(c.x,c.y); ctx.lineTo(b.x,b.y); ctx.closePath();
+    ctx.strokeStyle='#d8d0c6'; ctx.lineWidth=0.75; ctx.setLineDash([3,2.5]); ctx.stroke();
+    if (i%2===0) { ctx.fillStyle='rgba(0,0,0,0.03)'; ctx.fill(); }
+  });
+  // Axes
+  [TA,CA,RA].forEach(a => {
+    const e=pt(a,r); ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(e.x,e.y);
+    ctx.strokeStyle='#d8d0c6'; ctx.lineWidth=1; ctx.setLineDash([3,2.5]); ctx.stroke();
+  });
+  ctx.setLineDash([]);
+
+  // Data shape
+  const dT=pt(TA,r*cl(scores.truth)/100), dC=pt(CA,r*cl(scores.clickbait)/100), dR=pt(RA,r*cl(scores.ragebait)/100);
+  ctx.beginPath(); ctx.moveTo(dT.x,dT.y); ctx.lineTo(dC.x,dC.y); ctx.lineTo(dR.x,dR.y); ctx.closePath();
+  ctx.fillStyle='rgba(30,20,10,0.12)'; ctx.fill(); ctx.strokeStyle='#333'; ctx.lineWidth=2; ctx.stroke();
+
+  // Dots
+  [[dT,'#16a34a'],[dC,'#ea580c'],[dR,'#dc2626']].forEach(([p,col]) => {
+    ctx.beginPath(); ctx.arc(p.x,p.y,7,0,2*Math.PI); ctx.fillStyle='#f5f0e8'; ctx.fill(); ctx.strokeStyle=col; ctx.lineWidth=2.5; ctx.stroke();
+    ctx.beginPath(); ctx.arc(p.x,p.y,3,0,2*Math.PI); ctx.fillStyle=col; ctx.fill();
+  });
+
+  // Score numbers
+  ctx.font='bold 13px "Courier New",monospace';
+  ctx.fillStyle='#16a34a'; ctx.textAlign='center'; ctx.fillText(scores.truth, dT.x, dT.y-15);
+  ctx.fillStyle='#ea580c'; ctx.textAlign='left';   ctx.fillText(scores.clickbait, dC.x+13, dC.y+5);
+  ctx.fillStyle='#dc2626'; ctx.textAlign='right';  ctx.fillText(scores.ragebait, dR.x-13, dR.y+5);
+
+  // Axis labels
+  const [tPt,cPt,rPt] = [TA,CA,RA].map(a => pt(a,r));
+  ctx.font='bold 9px "Courier New",monospace';
+  ctx.fillStyle='#16a34a'; ctx.textAlign='center'; ctx.fillText('TRUTH', tPt.x, tPt.y-13);
+  ctx.fillStyle='#ea580c'; ctx.textAlign='left';   ctx.fillText('CLICKBAIT', cPt.x+6, cPt.y+5);
+  ctx.fillStyle='#dc2626'; ctx.textAlign='right';  ctx.fillText('RAGEBAIT', rPt.x-6, rPt.y+5);
+}
+
+function wrapText(ctx, text, x, y, maxW, lineH) {
+  const words = text.split(' '); let line = '';
+  for (const w of words) {
+    const test = line ? line+' '+w : w;
+    if (ctx.measureText(test).width > maxW && line) { ctx.fillText(line, x, y); line=w; y+=lineH; }
+    else { line=test; }
+  }
+  if (line) ctx.fillText(line, x, y);
+  return y;
+}
+
+async function generateShareCard(result) {
+  const DPR=2, W=560, H=400, pad=40;
+  const canvas = document.createElement('canvas');
+  canvas.width=W*DPR; canvas.height=H*DPR;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(DPR, DPR);
+
+  // Background
+  ctx.fillStyle='#f5f0e8'; ctx.fillRect(0,0,W,H);
+
+  // Header + footer rules
+  ctx.strokeStyle='#c8c0b4'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(pad,52); ctx.lineTo(W-pad,52); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(pad,H-38); ctx.lineTo(W-pad,H-38); ctx.stroke();
+
+  // Title
+  ctx.fillStyle='#1a1208'; ctx.textAlign='center';
+  ctx.font='bold 16px Georgia,serif';
+  ctx.fillText('THE BULLSHIT DETECTOR', W/2, 33);
+
+  // Radar chart
+  drawRadarCard(ctx, W/2, 168, 88, result.scores);
+
+  // Verdict
+  if (result.verdict) {
+    ctx.font='italic 13.5px Georgia,serif'; ctx.fillStyle='#2a1a08'; ctx.textAlign='center';
+    wrapText(ctx, `"${result.verdict}"`, W/2, 296, W-pad*2.5, 21);
+  }
+
+  // Footer
+  ctx.font='9px "Courier New",monospace'; ctx.fillStyle='#aaa'; ctx.textAlign='center';
+  ctx.fillText('thescientificoracle.github.io/bullshit-detector/', W/2, H-20);
+
+  return canvas;
+}
+
+async function shareWhatsapp() {
+  const msg = getShareMessage();
+  try {
+    const canvas = await generateShareCard(state.result);
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+    const file = new File([blob], 'bsd-verdict.png', { type:'image/png' });
+    if (navigator.share && navigator.canShare && navigator.canShare({ files:[file] })) {
+      await navigator.share({ files:[file], text: msg }); return;
+    }
+    // Desktop fallback: download the image, then open WhatsApp
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = 'bsd-verdict.png'; a.click();
+  } catch(e) { /* fall through */ }
+  window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(msg), '_blank');
+}
+
+async function saveShareImage() {
+  const canvas = await generateShareCard(state.result);
+  const a = document.createElement('a'); a.href = canvas.toDataURL('image/png');
+  a.download = 'bsd-verdict.png'; a.click();
 }
 function copyShareLink() {
   navigator.clipboard.writeText(location.href)
@@ -810,6 +923,7 @@ function renderShareSection(r) {
     <div class="share-btn-row">
       <button class="share-btn-sm btn-wa" onclick="shareWhatsapp()">WHATSAPP</button>
       <button class="${linkClass}" onclick="copyShareLink()">${linkLabel}</button>
+      <button class="share-btn-sm btn-img" onclick="saveShareImage()">SAVE IMAGE</button>
     </div>
   </div>`;
 }
