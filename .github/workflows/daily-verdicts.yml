@@ -1,0 +1,29 @@
+name: Daily Verdicts Refresh
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # 6am UTC every day
+  workflow_dispatch:        # Allow manual trigger from GitHub UI
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call verdicts-daily edge function
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "${{ secrets.SUPABASE_URL }}/functions/v1/verdicts-daily" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Content-Type: application/json" \
+            --max-time 120)
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+
+          echo "HTTP $HTTP_CODE"
+          echo "$BODY"
+
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "ERROR: Edge function returned $HTTP_CODE"
+            exit 1
+          fi
