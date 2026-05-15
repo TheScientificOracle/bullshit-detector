@@ -23,7 +23,7 @@
 
   /* ── Masthead ── */
   .masthead { text-align: center; padding: 32px 0 20px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
-  .eyebrow { font-family: 'Courier New', monospace; font-size: 9.5px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; transition: opacity 0.35s ease; }
+  .eyebrow { font-family: 'Courier New', monospace; font-size: 11px; letter-spacing: 2.5px; color: var(--subtle); text-transform: uppercase; margin-bottom: 8px; transition: opacity 0.4s ease; min-height: 16px; }
   .masthead h1 { font-family: Georgia, serif; font-size: 28px; font-weight: bold; letter-spacing: -0.5px; color: var(--text); cursor: default; }
   .masthead h1.clickable { cursor: pointer; }
 
@@ -163,6 +163,7 @@
 <script>
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 const EDGE_URL      = 'https://qpisyykqmivljpsqleul.supabase.co/functions/v1/bs-detect';
+const SUPABASE_URL  = 'https://qpisyykqmivljpsqleul.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_woWGWtBvw0FJJNaP7rC63A_y5ZSVBjp';
 
 // ─── ROTATING TAGLINES ────────────────────────────────────────────────────────
@@ -216,8 +217,8 @@ function incrementCount() {
 
 function fmtCount(n) { return n.toLocaleString(); }
 
-// ─── HALL OF VERDICTS ─────────────────────────────────────────────────────────
-const HALL_OF_VERDICTS = [
+// ─── HALL OF VERDICTS — fallback (shown until live data loads) ────────────────
+const HALL_OF_VERDICTS_FALLBACK = [
   {
     headline:    'The One Skill That Could Make You More Hireable Than An MBA Graduate',
     publication: 'Fortune',
@@ -255,6 +256,40 @@ const HALL_OF_VERDICTS = [
     screenshot_caveats: null, screenshotMode: false,
   },
 ];
+
+// Live verdicts — populated from Supabase on boot, falls back to above
+let HALL_OF_VERDICTS = HALL_OF_VERDICTS_FALLBACK;
+let hallVerdictsDate = null;   // ISO date string of the live data
+let hallVerdictsLive = false;  // true once live data has loaded
+
+async function fetchDailyVerdicts() {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/daily_verdicts?select=*&date=eq.${today}&order=created_at.asc&limit=3`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+    );
+    if (!res.ok) return;
+    const rows = await res.json();
+    if (!Array.isArray(rows) || rows.length === 0) return;
+
+    HALL_OF_VERDICTS = rows.map(r => ({
+      headline:           r.headline,
+      publication:        r.publication,
+      source_url:         r.source_url,
+      scores:             r.scores,
+      verdict:            r.verdict,
+      reasoning:          r.reasoning,
+      screenshot_caveats: r.screenshot_caveats,
+      screenshotMode:     r.screenshot_mode,
+    }));
+    hallVerdictsDate = today;
+    hallVerdictsLive = true;
+
+    // Re-render home screen if still on it
+    if (state.screen === 'input') render();
+  } catch { /* fail silently — fallback stays */ }
+}
 
 // ─── URL / FORMAT DETECTION ───────────────────────────────────────────────────
 const PAYWALL_DOMAINS  = ['ft.com','wsj.com','thetimes.co.uk','economist.com','newyorker.com','theathletic.com','spectator.co.uk'];
@@ -579,10 +614,13 @@ async function analyseScreenshots(images) {
 }
 
 function loadHallResult(i) {
-  const result = HALL_OF_VERDICTS[i];
+  const raw = HALL_OF_VERDICTS[i];
+  // Promote source_url so "Disagree? Run it yourself" CTA appears on live verdicts
+  const result = raw.source_url ? { ...raw, sourceUrl: raw.source_url } : raw;
   setResultHash(result);
   pendingVerdictAnimation = true;
-  setState({ screen: 'result', result, isDemo: true, openCard: null, isSharedResult: false, shareTab: 'short', copiedBtn: null });
+  // Live verdicts are real analyses — show as demo=false so no demo banner
+  setState({ screen: 'result', result, isDemo: !hallVerdictsLive, openCard: null, isSharedResult: false, shareTab: 'short', copiedBtn: null });
 }
 
 // ─── HANDLERS ─────────────────────────────────────────────────────────────────
@@ -670,7 +708,7 @@ function renderHallOfVerdicts() {
   const cards = HALL_OF_VERDICTS.map((v, i) => {
     const hl = v.headline.length > 55 ? v.headline.slice(0, 52) + '…' : v.headline;
     return `<div class="verdict-card" onclick="loadHallResult(${i})">
-      <p class="verdict-card-pub">${v.publication}</p>
+      <p class="verdict-card-pub">${v.publication || 'Unknown'}</p>
       <p class="verdict-card-hl">"${hl}"</p>
       <div class="verdict-card-scores">
         <span style="color:#16a34a">T:${v.scores.truth}</span>
@@ -679,7 +717,12 @@ function renderHallOfVerdicts() {
       </div>
     </div>`;
   }).join('');
-  return `<p class="hall-label">Verdicts</p>
+  const liveTag = hallVerdictsLive
+    ? `<span style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;color:#16a34a;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:4px;padding:2px 6px;margin-left:8px">● TODAY</span>`
+    : `<span style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;color:var(--muted);margin-left:8px">EXAMPLES</span>`;
+  return `<div style="display:flex;align-items:baseline;gap:0;margin-bottom:10px">
+      <p class="hall-label" style="margin-bottom:0">Verdicts</p>${liveTag}
+    </div>
     <div class="hall-grid">${cards}</div>`;
 }
 
@@ -918,7 +961,6 @@ function render() {
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
 (function boot() {
   incrementCount();
-  startTaglineCycle();
 
   const hash = location.hash;
   if (hash.startsWith('#r=')) {
@@ -933,6 +975,10 @@ function render() {
     }
   }
   render();
+  // Start tagline cycle after DOM is painted
+  requestAnimationFrame(() => startTaglineCycle());
+  // Fetch today's live verdicts in background — re-renders home screen when ready
+  fetchDailyVerdicts();
 })();
 </script>
 </body>
