@@ -625,6 +625,10 @@ function loadHallResult(i) {
 
 // ─── HANDLERS ─────────────────────────────────────────────────────────────────
 function handleSubmit() {
+  // If already on a blocker/format screen with screenshots ready, go straight to analysis
+  if (['format', 'combined', 'access'].includes(state.screen) && state.uploadedImages.length > 0) {
+    confirmScreenshots(); return;
+  }
   const url = state.url.trim();
   if (!url) {
     if (state.uploadedImages.length > 0) { confirmScreenshots(); return; }
