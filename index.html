@@ -48,10 +48,6 @@
   .detect-btn { background: #111; color: white; border: none; border-radius: var(--radius); padding: 13px 18px; font-family: 'Courier New', monospace; font-size: 13px; letter-spacing: 0.5px; cursor: pointer; flex-shrink: 0; }
   .detect-btn:hover { opacity: 0.88; }
 
-  /* ── Examples ── */
-  .examples-label { font-family: 'Courier New', monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.5px; margin-bottom: 6px; }
-  .example-chip { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 6px 14px; font-family: 'Courier New', monospace; font-size: 11px; color: var(--subtle); cursor: pointer; }
-  .example-chip:hover { border-color: #aaa; }
 
   /* ── OR divider ── */
   .or-divider { display: flex; align-items: center; gap: 12px; margin: 18px 0 14px; }
@@ -80,6 +76,12 @@
   /* ── Screenshot upload zone ── */
   .upload-label { display: flex; align-items: center; justify-content: center; gap: 8px; font-family: 'Courier New', monospace; font-size: 12px; color: var(--muted); letter-spacing: 0.5px; border: 1px dashed #d8d0c6; border-radius: var(--radius); padding: 14px 16px; cursor: pointer; width: 100%; }
   .upload-label:hover { border-color: #aaa; color: var(--subtle); }
+  /* Prominent upload zone — home screen */
+  .upload-zone-card { background: var(--card); border: 1.5px dashed #c4bdb4; border-radius: var(--radius); padding: 28px 20px 22px; text-align: center; cursor: pointer; width: 100%; display: block; transition: border-color 0.15s, background 0.15s; }
+  .upload-zone-card:hover { border-color: #999; background: #faf8f5; }
+  .upload-zone-icon { font-size: 30px; display: block; margin-bottom: 10px; }
+  .upload-zone-title { font-family: Georgia, serif; font-size: 16px; color: var(--text); margin-bottom: 8px; display: block; }
+  .upload-zone-hint { font-family: 'Courier New', monospace; font-size: 10px; color: var(--muted); line-height: 1.75; letter-spacing: 0.3px; display: block; }
 
   /* ── Thumbnail strip ── */
   .thumb-strip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 10px; scrollbar-width: thin; }
@@ -515,9 +517,19 @@ function renderMasthead(clickable) {
 function renderUploadZone(label) {
   const imgs = state.uploadedImages;
   if (imgs.length === 0) {
+    // Prominent card version on home screen (no label passed)
+    if (!label) {
+      return `<label class="upload-zone-card">
+        <input type="file" accept="image/*" multiple onchange="handleFileAdd(this)" style="display:none"/>
+        <span class="upload-zone-icon">📷</span>
+        <span class="upload-zone-title">Upload screenshots to analyse</span>
+        <span class="upload-zone-hint">For best results, upload multiple screenshots of the full article<br>then paste the URL above to verify</span>
+      </label>`;
+    }
+    // Compact version on access/format/combined screens
     return `<label class="upload-label">
       <input type="file" accept="image/*" multiple onchange="handleFileAdd(this)" style="display:none"/>
-      📷 ${label || 'Upload screenshots'}
+      📷 ${label}
     </label>`;
   }
   const thumbs = imgs.map((img, i) =>
@@ -632,10 +644,8 @@ function screenInput() {
       oninput="state.url=this.value" onkeydown="if(event.key==='Enter')handleSubmit()"/>
     <button class="detect-btn" onclick="handleSubmit()" ${hasImages ? 'style="opacity:0.4;pointer-events:none"' : ''}>DETECT</button>
   </div>
-  ${!hasImages ? `<p class="examples-label">TRY AN EXAMPLE:</p>
-  <button class="example-chip" onclick="setState({screen:'result',result:DEMO_RESULT,isDemo:true,openCard:null,shareTab:'short',copiedBtn:null,isSharedResult:false})">Fortune · CEO hiring article</button>` : ''}
   <div class="or-divider"><span class="or-text">OR</span></div>
-  ${renderUploadZone('Upload a screenshot instead')}
+  ${hasImages ? renderUploadZone('Upload a screenshot instead') : renderUploadZone()}
   ${!hasImages ? `<div class="explainer">
     <p class="explainer-label">Three independent scores</p>
     ${[
