@@ -506,17 +506,16 @@ function clearHash() {
 
 // ─── SHARE HELPERS ────────────────────────────────────────────────────────────
 function getShareMessage() {
-  const r   = state.result;
-  const url = location.href;
-  const sc  = `Truth ${r.scores.truth} · Clickbait ${r.scores.clickbait} · Ragebait ${r.scores.ragebait}`;
-  const cta = `Disagree? Run it yourself → ${url}`;
+  const r  = state.result;
+  const sc = `Truth ${r.scores.truth} · Clickbait ${r.scores.clickbait} · Ragebait ${r.scores.ragebait}`;
+  const footer = `thescientificoracle.github.io/bullshit-detector/`;
 
   if (state.shareTab === 'full' && r.headline) {
     const hl  = r.headline.length > 72 ? r.headline.slice(0, 69) + '…' : r.headline;
     const pub = r.publication ? ` (${r.publication})` : '';
-    return `On "${hl}"${pub}:\n\n${sc}\n\n"${r.verdict}"\n\n${cta}`;
+    return `On "${hl}"${pub}:\n\n${sc}\n\n"${r.verdict}"\n\n${footer}`;
   }
-  return `The Bullshit Detector verdict:\n\n${sc}\n\n"${r.verdict}"\n\n${cta}`;
+  return `The Bullshit Detector verdict:\n\n${sc}\n\n"${r.verdict}"\n\n${footer}`;
 }
 
 function switchShareTab(tab) { setState({ shareTab: tab }); }
@@ -778,21 +777,20 @@ function renderShareSection(r) {
   const hasHL  = !!(r.headline);
   const isShort = state.shareTab === 'short';
   const sc  = `Truth ${r.scores.truth} · Clickbait ${r.scores.clickbait} · Ragebait ${r.scores.ragebait}`;
-  const url = location.href;
-  const cta = `Disagree? Run it yourself → ${url}`;
+  const footer = `thescientificoracle.github.io/bullshit-detector/`;
 
   let msgText;
   if (!isShort && hasHL) {
     const hl  = r.headline.length > 72 ? r.headline.slice(0, 69) + '…' : r.headline;
     const pub = r.publication ? ` (${r.publication})` : '';
-    msgText = `On "${hl}"${pub}:\n\n${sc}\n\n"${r.verdict}"\n\n${cta}`;
+    msgText = `On "${hl}"${pub}:\n\n${sc}\n\n"${r.verdict}"\n\n${footer}`;
   } else {
-    msgText = `The Bullshit Detector verdict:\n\n${sc}\n\n"${r.verdict}"\n\n${cta}`;
+    msgText = `The Bullshit Detector verdict:\n\n${sc}\n\n"${r.verdict}"\n\n${footer}`;
   }
 
   const msgDisplay = msgText
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/Disagree\? Run it yourself →/, '<span class="msg-cta-line">Disagree? Run it yourself →</span>');
+    .replace(/thescientificoracle\.github\.io\/bullshit-detector\//, '<span class="msg-cta-line">thescientificoracle.github.io/bullshit-detector/</span>');
 
   const tabs = hasHL ? `<div class="share-tabs">
     <button class="share-tab ${isShort ? 'active' : ''}" onclick="switchShareTab('short')">SHORT</button>
