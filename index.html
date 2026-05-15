@@ -700,7 +700,7 @@ function renderUploadZone(label) {
   const n = imgs.length;
   return `<p class="thumb-count">${n} SCREENSHOT${n > 1 ? 'S' : ''} READY</p>
     <div class="thumb-strip">${thumbs}${addMore}</div>
-    <button class="btn-primary" onclick="confirmScreenshots()">ANALYSE ${n} SCREENSHOT${n > 1 ? 'S' : ''}</button>
+    <button class="btn-primary" onclick="handleSubmit()">DETECT</button>
     <button class="btn-secondary" onclick="clearImages()">CLEAR</button>`;
 }
 
@@ -813,7 +813,7 @@ function screenInput() {
   <div class="url-row">
     <input class="url-input" type="url" placeholder="Paste a URL to analyse…" value="${state.url.replace(/"/g,'&quot;')}"
       oninput="state.url=this.value" onkeydown="if(event.key==='Enter')handleSubmit()"/>
-    <button class="detect-btn" onclick="handleSubmit()" ${hasImages ? 'style="opacity:0.4;pointer-events:none"' : ''}>DETECT</button>
+    <button class="detect-btn" onclick="handleSubmit()">DETECT</button>
   </div>
   <div class="or-divider"><span class="or-text">OR</span></div>
   ${hasImages ? renderUploadZone('Upload a screenshot instead') : renderUploadZone()}
