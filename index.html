@@ -482,7 +482,16 @@ function animateVerdict() {
 
 // ─── RESULT HASH (shareable URLs) ────────────────────────────────────────────
 function encodeResult(result) {
-  try { return btoa(unescape(encodeURIComponent(JSON.stringify(result)))); } catch { return null; }
+  // Only encode the fields needed for a useful shared view — reasoning arrays make URLs enormous
+  const slim = {
+    headline:      result.headline,
+    publication:   result.publication,
+    scores:        result.scores,
+    verdict:       result.verdict,
+    sourceUrl:     result.sourceUrl,
+    screenshotMode: result.screenshotMode || false,
+  };
+  try { return btoa(unescape(encodeURIComponent(JSON.stringify(slim)))); } catch { return null; }
 }
 function decodeResult(hash) {
   try { return JSON.parse(decodeURIComponent(escape(atob(hash)))); } catch { return null; }
@@ -925,10 +934,11 @@ function screenResult() {
     <p class="card-label" style="text-align:center;margin-bottom:10px">Content Fingerprint</p>
     ${renderRadar(r.scores, r.screenshotMode)}
   </div>
+  ${r.reasoning ? `
   <p class="card-label" style="margin-bottom:10px">Breakdown - tap to expand</p>
   ${renderScoreCard('truth',     r)}
   ${renderScoreCard('clickbait', r)}
-  ${renderScoreCard('ragebait',  r)}
+  ${renderScoreCard('ragebait',  r)}` : ''}
   ${rerunBox}
   ${renderShareSection(r)}
   <button class="btn-secondary" onclick="resetToInput()">ANALYSE ANOTHER</button>`;
