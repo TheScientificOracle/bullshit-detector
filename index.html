@@ -541,9 +541,9 @@ function getShareMessage() {
   if (state.shareTab === 'full' && r.headline) {
     const hl  = r.headline.length > 72 ? r.headline.slice(0, 69) + '…' : r.headline;
     const pub = r.publication ? ` (${r.publication})` : '';
-    return `On "${hl}"${pub}:\n\n${sc}\n\n"${r.verdict}"\n\n${footer}`;
+    return `I just ran this through the bullshit detector and it stinks!\n\nOn "${hl}"${pub}:\n${sc}\n\n"${r.verdict}"\n\n${footer}`;
   }
-  return `The Bullshit Detector verdict:\n\n${sc}\n\n"${r.verdict}"\n\n${footer}`;
+  return `I just ran this through the bullshit detector and it stinks!\n\n${sc}\n\n"${r.verdict}"\n\n${footer}`;
 }
 
 function switchShareTab(tab) { setState({ shareTab: tab }); }
