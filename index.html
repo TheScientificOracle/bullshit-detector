@@ -955,9 +955,9 @@ function renderShareSection(r) {
   if (!isShort && hasHL) {
     const hl  = r.headline.length > 72 ? r.headline.slice(0, 69) + '…' : r.headline;
     const pub = r.publication ? ` (${r.publication})` : '';
-    msgText = `On "${hl}"${pub}:\n\n${sc}\n\n"${r.verdict}"\n\n${footer}`;
+    msgText = `I just ran this through the bullshit detector and it stinks!\n\nOn "${hl}"${pub}:\n${sc}\n\n"${r.verdict}"\n\n${footer}`;
   } else {
-    msgText = `The Bullshit Detector verdict:\n\n${sc}\n\n"${r.verdict}"\n\n${footer}`;
+    msgText = `I just ran this through the bullshit detector and it stinks!\n\n${sc}\n\n"${r.verdict}"\n\n${footer}`;
   }
 
   const msgDisplay = msgText
