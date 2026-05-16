@@ -234,10 +234,10 @@ function startTaglineCycle() {
   }, 3800);
 }
 
-// ─── WEAPON GRADE LABELS ──────────────────────────────────────────────────────
+// ─── WEAPONS GRADE LABELS ──────────────────────────────────────────────────────
 function getWeaponLabel(type, score) {
   if (type === 'ragebait') {
-    if (score >= 85) return { label: 'WEAPON GRADE',      color: '#dc2626' };
+    if (score >= 85) return { label: 'WEAPONS GRADE',      color: '#dc2626' };
     if (score >= 65) return { label: 'ENGINEERED OUTRAGE',color: '#ea580c' };
     if (score >= 45) return { label: 'EMOTIONALLY CHARGED',color:'#ca8a04' };
     return null;
@@ -621,8 +621,8 @@ function getShareMessage() {
   const weapon = getBiggestWeaponLabel(r.scores);
   const sc     = `Truth ${r.scores.truth} · Clickbait ${r.scores.clickbait} · Ragebait ${r.scores.ragebait}${weapon ? ` (${weapon})` : ''}`;
   const footer = `thescientificoracle.github.io/bullshit-detector/`;
-  const hook   = weapon === 'WEAPON GRADE'
-    ? `I just ran this through the bullshit detector. WEAPON GRADE ragebait.`
+  const hook   = weapon === 'WEAPONS GRADE'
+    ? `I just ran this through the bullshit detector. WEAPONS GRADE ragebait.`
     : `I just ran this through the bullshit detector and it stinks!`;
 
   if (state.shareTab === 'full' && r.headline) {
