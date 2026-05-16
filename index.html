@@ -186,6 +186,52 @@
   .claim-source-link:hover { text-decoration: underline; }
   .claim-internal-note { font-family: 'Courier New',monospace; font-size: 9px; color: #bbb; letter-spacing: 0.3px; }
 
+  /* ── Publisher profile ── */
+  .publisher-profile { background: #f8f7f4; border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px; margin-bottom: 12px; }
+  .publisher-profile-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .publisher-profile-name { font-family: 'Courier New',monospace; font-size: 9px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+  .publisher-profile-tag { font-family: 'Courier New',monospace; font-size: 8px; letter-spacing: 1px; color: #bbb; }
+  .publisher-scores { display: flex; gap: 14px; }
+  .pub-score { display: flex; flex-direction: column; gap: 2px; }
+  .pub-score-label { font-family: 'Courier New',monospace; font-size: 7.5px; letter-spacing: 1px; }
+  .pub-score-val { font-family: 'Courier New',monospace; font-size: 14px; font-weight: bold; }
+  .pub-score-diff { font-family: 'Courier New',monospace; font-size: 8px; }
+  .publisher-note { font-family: 'Courier New',monospace; font-size: 9px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+
+  /* ── Instinct / celebration banners ── */
+  .instinct-banner { background: #1a1a1a; color: #fff; border-radius: var(--radius); padding: 10px 16px; margin-bottom: 10px; font-family: 'Courier New',monospace; font-size: 11px; letter-spacing: 0.5px; }
+  .good-journalism-banner { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius); padding: 10px 16px; margin-bottom: 10px; font-family: 'Courier New',monospace; font-size: 11px; color: #166534; letter-spacing: 0.3px; }
+
+  /* ── Technique tags ── */
+  .techniques-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .technique-tag { font-family: 'Courier New',monospace; font-size: 8.5px; letter-spacing: 0.8px; padding: 3px 8px; border-radius: 3px; font-weight: bold; }
+  .technique-rb { background: #fef2f2; color: #dc2626; border: 1px solid #fca5a5; }
+  .technique-cb { background: #fff7ed; color: #ea580c; border: 1px solid #fed7aa; }
+
+  /* ── Age warning ── */
+  .age-warning { background: #fefce8; border: 1px solid #fde68a; border-radius: var(--radius); padding: 9px 14px; margin-bottom: 12px; font-family: 'Courier New',monospace; font-size: 10px; color: #854d0e; letter-spacing: 0.3px; line-height: 1.5; }
+
+  /* ── Claim share button ── */
+  .claim-share-btn { font-family: 'Courier New',monospace; font-size: 8px; letter-spacing: 0.8px; padding: 3px 8px; border-radius: 3px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; margin-left: auto; }
+  .claim-share-btn:hover { border-color: #aaa; color: #555; }
+  .claim-share-btn.copied { color: var(--truth); border-color: var(--truth); }
+
+  /* ── Bookmarklet ── */
+  .bookmarklet-section { background: #f8f7f4; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-top: 16px; }
+  .bookmarklet-hint { font-family: 'Courier New',monospace; font-size: 10px; color: var(--muted); line-height: 1.6; margin-bottom: 10px; }
+  .bookmarklet-link { display: inline-block; background: #111; color: #fff; font-family: 'Courier New',monospace; font-size: 11px; letter-spacing: 1px; padding: 8px 16px; border-radius: 6px; text-decoration: none; cursor: grab; }
+  .bookmarklet-link:hover { background: #333; }
+  .bookmarklet-label { font-family: 'Courier New',monospace; font-size: 8px; letter-spacing: 2px; color: var(--muted); margin-bottom: 6px; }
+
+  /* ── Hall of Shame ── */
+  .shame-grid { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+  .shame-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; cursor: pointer; }
+  .shame-card:hover { border-color: #dc2626; }
+  .shame-card-pub { font-family: 'Courier New',monospace; font-size: 8px; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 3px; }
+  .shame-card-hl { font-size: 12px; color: var(--text); line-height: 1.4; margin-bottom: 5px; font-style: italic; }
+  .shame-card-scores { display: flex; gap: 10px; align-items: center; }
+  .shame-rb-badge { font-family: 'Courier New',monospace; font-size: 9px; font-weight: bold; color: #dc2626; background: #fef2f2; border: 1px solid #fca5a5; padding: 1px 6px; border-radius: 3px; }
+
   /* ── Banners ── */
   .banner { border-radius: 8px; padding: 8px 14px; margin-bottom: 14px; }
   .banner-demo { background: #fffbeb; border: 1px solid #fcd34d; }
@@ -267,6 +313,162 @@ function getBiggestWeaponLabel(scores) {
   if (tl && scores.truth     <= 20) return tl.label;
   if (cl && scores.clickbait >= 65) return cl.label;
   return null;
+}
+
+// ─── PUBLISHER REPUTATION PROFILES ───────────────────────────────────────────
+const PUBLISHER_PROFILES = {
+  'dailymail.co.uk':      { name:'Daily Mail',        t:38, c:82, r:74 },
+  'thesun.co.uk':         { name:'The Sun',           t:35, c:85, r:72 },
+  'dailystar.co.uk':      { name:'Daily Star',        t:30, c:88, r:70 },
+  'mirror.co.uk':         { name:'Daily Mirror',      t:52, c:70, r:55 },
+  'express.co.uk':        { name:'Daily Express',     t:42, c:78, r:65 },
+  'breitbart.com':        { name:'Breitbart',         t:22, c:72, r:88 },
+  'rt.com':               { name:'RT',                t:20, c:60, r:82 },
+  'thegatewaypundit.com': { name:'Gateway Pundit',    t:15, c:68, r:90 },
+  'infowars.com':         { name:'Infowars',          t:12, c:65, r:92 },
+  'zerohedge.com':        { name:'ZeroHedge',         t:28, c:55, r:78 },
+  'reuters.com':          { name:'Reuters',           t:84, c:22, r:15 },
+  'apnews.com':           { name:'AP News',           t:86, c:20, r:12 },
+  'bbc.com':              { name:'BBC',               t:76, c:28, r:20 },
+  'bbc.co.uk':            { name:'BBC',               t:76, c:28, r:20 },
+  'theguardian.com':      { name:'The Guardian',      t:72, c:32, r:28 },
+  'ft.com':               { name:'Financial Times',   t:86, c:18, r:14 },
+  'economist.com':        { name:'The Economist',     t:84, c:20, r:16 },
+  'bloomberg.com':        { name:'Bloomberg',         t:80, c:28, r:18 },
+  'washingtonpost.com':   { name:'Washington Post',   t:74, c:35, r:28 },
+  'telegraph.co.uk':      { name:'The Telegraph',     t:68, c:42, r:38 },
+  'independent.co.uk':    { name:'The Independent',   t:66, c:45, r:35 },
+  'sky.com':              { name:'Sky News',           t:70, c:38, r:30 },
+  'nytimes.com':          { name:'New York Times',    t:76, c:32, r:25 },
+  'wsj.com':              { name:'Wall St Journal',   t:80, c:30, r:22 },
+  'politico.com':         { name:'Politico',          t:75, c:35, r:30 },
+  'snopes.com':           { name:'Snopes',            t:88, c:18, r:12 },
+  'factcheck.org':        { name:'FactCheck.org',     t:90, c:15, r:10 },
+  'fullfact.org':         { name:'Full Fact',         t:92, c:12, r:8  },
+};
+function getPublisherProfile(url) {
+  if (!url) return null;
+  try {
+    const domain = new URL(url).hostname.replace(/^www\./, '');
+    for (const [key, p] of Object.entries(PUBLISHER_PROFILES)) {
+      if (domain === key || domain.endsWith('.' + key)) return { ...p, domain: key };
+    }
+  } catch {}
+  return null;
+}
+function renderPublisherProfile(sourceUrl, currentScores) {
+  const p = getPublisherProfile(sourceUrl);
+  if (!p) return '';
+  const diff = (cur, avg) => {
+    const d = cur - avg;
+    if (Math.abs(d) < 5) return '<span style="color:#bbb">avg</span>';
+    const arrow = d > 0 ? '▲' : '▼';
+    const col = d > 0 ? '#dc2626' : '#16a34a';
+    return `<span style="color:${col}">${arrow}${Math.abs(d)}</span>`;
+  };
+  return `<div class="publisher-profile">
+    <div class="publisher-profile-head">
+      <span class="publisher-profile-name">${p.name} — typical scores</span>
+      <span class="publisher-profile-tag">BSD HISTORICAL AVG</span>
+    </div>
+    <div class="publisher-scores">
+      <div class="pub-score">
+        <span class="pub-score-label" style="color:#16a34a">TRUTH</span>
+        <span class="pub-score-val" style="color:#16a34a">${p.t}</span>
+        <span class="pub-score-diff">${diff(currentScores.truth, p.t)} vs avg</span>
+      </div>
+      <div class="pub-score">
+        <span class="pub-score-label" style="color:#ea580c">CLICKBAIT</span>
+        <span class="pub-score-val" style="color:#ea580c">${p.c}</span>
+        <span class="pub-score-diff">${diff(currentScores.clickbait, p.c)} vs avg</span>
+      </div>
+      <div class="pub-score">
+        <span class="pub-score-label" style="color:#dc2626">RAGEBAIT</span>
+        <span class="pub-score-val" style="color:#dc2626">${p.r}</span>
+        <span class="pub-score-diff">${diff(currentScores.ragebait, p.r)} vs avg</span>
+      </div>
+    </div>
+    <p class="publisher-note">This article vs ${p.name}'s typical output.</p>
+  </div>`;
+}
+
+// ─── MANIPULATION TECHNIQUE EXTRACTION ────────────────────────────────────────
+const TECHNIQUE_PATTERNS = [
+  { re:/tribal|us.vs.them|identity trigger/i, label:'TRIBAL IDENTITY TRIGGER', cls:'technique-rb' },
+  { re:/outrage|can you believe|how dare/i,   label:'OUTRAGE FRAMING',          cls:'technique-rb' },
+  { re:/dehumanisi|loaded language/i,         label:'DEHUMANISING LANGUAGE',    cls:'technique-rb' },
+  { re:/false binary|manufactured conflict/i, label:'FALSE BINARY',             cls:'technique-rb' },
+  { re:/designed to.*(anger|spread|share)/i,  label:'ENGINEERED TO SPREAD',     cls:'technique-rb' },
+  { re:/withheld|force.*click|gap/i,          label:'INFORMATION WITHHOLDING',  cls:'technique-cb' },
+  { re:/exaggerat|headline.*body|inflat/i,    label:'HEADLINE INFLATION',       cls:'technique-cb' },
+  { re:/anonymous|unnamed source/i,           label:'ANONYMOUS SOURCING',       cls:'technique-cb' },
+  { re:/speculation.*fact|stated as fact/i,   label:'SPECULATION AS FACT',      cls:'technique-rb' },
+];
+function extractTechniques(reasoning) {
+  if (!reasoning) return [];
+  const text = [...(reasoning.ragebait||[]), ...(reasoning.clickbait||[])].join(' ');
+  return TECHNIQUE_PATTERNS.filter(p => p.re.test(text)).slice(0, 3);
+}
+function renderTechniques(r) {
+  const techs = extractTechniques(r.reasoning);
+  if (!techs.length) return '';
+  const tags = techs.map(t => `<span class="technique-tag ${t.cls}">${t.label}</span>`).join('');
+  return `<div class="techniques-wrap">${tags}</div>`;
+}
+
+// ─── CLAIM CARD SHARING ────────────────────────────────────────────────────────
+async function shareClaimCard(idx) {
+  const cc = state.result && state.result.claim_checks && state.result.claim_checks[idx];
+  if (!cc) return;
+  const VERDICT_COLORS = { true:'#16a34a', false:'#dc2626', misleading:'#ea580c', contested:'#ca8a04', unverifiable:'#888' };
+  const v = (cc.verdict||'unverifiable').toLowerCase();
+  const col = VERDICT_COLORS[v] || '#888';
+  const label = (v === 'true' ? 'TRUE' : v === 'false' ? 'FALSE' : v.toUpperCase());
+
+  const DPR=2, W=520, H=260;
+  const canvas = document.createElement('canvas');
+  canvas.width=W*DPR; canvas.height=H*DPR;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(DPR,DPR);
+
+  ctx.fillStyle='#f5f0e8'; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='#c8bfb0'; ctx.lineWidth=1;
+  ctx.strokeRect(12,12,W-24,H-24);
+  ctx.fillStyle='#111'; ctx.fillRect(12,12,W-24,36);
+  ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.font='bold 10px "Courier New",monospace';
+  ctx.fillText('THE BULLSHIT DETECTOR — CLAIM CHECK', W/2, 35);
+
+  // Verdict badge
+  ctx.fillStyle=col; ctx.fillRect(24,62,100,26);
+  ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.font='bold 10px "Courier New",monospace';
+  ctx.fillText(label, 74, 80);
+
+  // Claim text
+  ctx.fillStyle='#1a1208'; ctx.textAlign='left'; ctx.font='italic 13px Georgia,serif';
+  wrapText(ctx, `"${cc.claim}"`, 24, 110, W-48, 20);
+
+  // Note
+  if (cc.note) {
+    ctx.fillStyle='#666'; ctx.font='11px "Courier New",monospace';
+    wrapText(ctx, cc.note, 24, 160, W-48, 17);
+  }
+
+  // Source
+  const src = cc.source ? `Verified by ${cc.source}` : 'Claude knowledge assessment';
+  ctx.fillStyle='#aaa'; ctx.font='9px "Courier New",monospace'; ctx.textAlign='left';
+  ctx.fillText(src, 24, H-30);
+  ctx.textAlign='right';
+  ctx.fillText('thescientificoracle.github.io/bullshit-detector/', W-24, H-30);
+
+  try {
+    const blob = await new Promise(res => canvas.toBlob(res,'image/png'));
+    const file = new File([blob],'bsd-claim.png',{type:'image/png'});
+    if (navigator.share && navigator.canShare && navigator.canShare({files:[file]})) {
+      await navigator.share({files:[file], text:`CLAIM CHECK: ${label}\n\n"${cc.claim}"\n\n${cc.note||''}\n\nthescientificoracle.github.io/bullshit-detector/`});
+      return;
+    }
+    const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='bsd-claim.png'; a.click();
+  } catch {}
 }
 
 // ─── PERSONAL DETECTION COUNTER ───────────────────────────────────────────────
@@ -588,6 +790,7 @@ function encodeResult(result) {
   const slim = {
     headline:      result.headline,
     publication:   result.publication,
+    publish_date:  result.publish_date || null,
     scores:        result.scores,
     verdict:       result.verdict,
     sourceUrl:     result.sourceUrl,
@@ -1030,6 +1233,34 @@ function renderHallOfVerdicts() {
     <div class="hall-grid">${cards}</div>`;
 }
 
+function renderHallOfShame() {
+  const sorted = [...HALL_OF_VERDICTS]
+    .filter(v => v.scores && v.scores.ragebait >= 60)
+    .sort((a,b) => b.scores.ragebait - a.scores.ragebait)
+    .slice(0, 4);
+  if (sorted.length === 0) return '';
+  const cards = sorted.map((v, i) => {
+    const realIdx = HALL_OF_VERDICTS.indexOf(v);
+    const hl = v.headline.length > 65 ? v.headline.slice(0,62)+'…' : v.headline;
+    const wl = getWeaponLabel('ragebait', v.scores.ragebait);
+    return `<div class="shame-card" onclick="loadHallResult(${realIdx})">
+      <p class="shame-card-pub">${v.publication || 'Unknown'}</p>
+      <p class="shame-card-hl">"${hl}"</p>
+      <div class="shame-card-scores">
+        <span class="shame-rb-badge">RAGEBAIT ${v.scores.ragebait}</span>
+        ${wl ? `<span style="font-family:'Courier New',monospace;font-size:8px;color:${wl.color};font-weight:bold;letter-spacing:0.5px">${wl.label}</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  return `<div style="margin-bottom:12px">
+    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px">
+      <p class="hall-label" style="margin-bottom:0">Hall of Shame</p>
+      <span style="font-family:'Courier New',monospace;font-size:8px;letter-spacing:1px;color:#dc2626">WORST RAGEBAIT DETECTED</span>
+    </div>
+    <div class="shame-grid">${cards}</div>
+  </div>`;
+}
+
 function renderScoreCard(type, result) {
   const score  = result.scores[type];
   const isOpen = state.openCard === type;
@@ -1077,7 +1308,7 @@ const VERDICT_META = {
 function renderClaimChecks(r) {
   if (!r.claim_checks || r.claim_checks.length === 0) return '';
 
-  const cards = r.claim_checks.map(cc => {
+  const cards = r.claim_checks.map((cc, idx) => {
     const v   = (cc.verdict || 'unverifiable').toLowerCase();
     const meta = VERDICT_META[v] || VERDICT_META.unverifiable;
     const sourceHtml = cc.source_url
@@ -1088,6 +1319,7 @@ function renderClaimChecks(r) {
       <div class="claim-verdict-row">
         <span class="claim-section-label">Claim check</span>
         <span class="claim-verdict-badge ${meta.cls}">${meta.label}</span>
+        <button class="claim-share-btn" onclick="shareClaimCard(${idx})" title="Share this claim card">SHARE CLAIM ↗</button>
       </div>
       <p class="claim-text">"${cc.claim}"</p>
       ${cc.note ? `<p class="claim-note">${cc.note}</p>` : ''}
@@ -1159,6 +1391,12 @@ function screenInput() {
   ${hasImages ? renderUploadZone('Upload a screenshot instead') : renderUploadZone()}
   <p class="count-line">${fmtCount(getCount())} articles detected and counting</p>
   ${!hasImages ? renderHallOfVerdicts() : ''}
+  ${!hasImages ? renderHallOfShame() : ''}
+  ${!hasImages ? `<div class="bookmarklet-section">
+    <p class="bookmarklet-label">DETECT FROM ANY PAGE</p>
+    <p class="bookmarklet-hint">Drag this button to your bookmarks bar. On any article, click it to run BSD instantly — no copy-pasting.</p>
+    <a class="bookmarklet-link" href="javascript:(function(){window.open('https://thescientificoracle.github.io/bullshit-detector/#detect='+encodeURIComponent(location.href),'_blank')})();" onclick="return false;" title="Drag me to your bookmarks bar">⚡ BULLSHIT DETECTOR</a>
+  </div>` : ''}
   ${!hasImages ? `<div class="explainer">
     <p class="explainer-label">Three independent scores</p>
     ${[
@@ -1255,6 +1493,33 @@ function screenResult() {
   const personalLine  = personalCount > 0
     ? `You've run the detector ${personalCount} time${personalCount===1?'':'s'}.`
     : `${getCount().toLocaleString()} articles detected so far.`;
+  // Publisher profile
+  const pubProfile = (!state.isDemo && r.sourceUrl) ? renderPublisherProfile(r.sourceUrl, r.scores) : '';
+
+  // Instinct / celebration banner
+  let instinctBanner = '';
+  if (r.scores.ragebait >= 75 && !state.isDemo)
+    instinctBanner = `<div class="instinct-banner">Your instincts were right.</div>`;
+  else if (r.scores.truth >= 80 && r.scores.ragebait <= 20 && r.scores.clickbait <= 25 && !state.isDemo)
+    instinctBanner = `<div class="good-journalism-banner">Actually well-sourced. Rare.</div>`;
+
+  // Age warning
+  const ageWarning = (() => {
+    if (!r.publish_date) return '';
+    try {
+      const pub = new Date(r.publish_date);
+      const monthsOld = (Date.now() - pub.getTime()) / (1000 * 60 * 60 * 24 * 30);
+      if (monthsOld >= 6) {
+        const mo = Math.floor(monthsOld);
+        return `<div class="age-warning">⚠ This article is ${mo} months old. Check why it's circulating again — old content being reshared is a common misinformation vector.</div>`;
+      }
+    } catch {}
+    return '';
+  })();
+
+  // Technique labels
+  const techniquesHtml = (!state.isDemo) ? renderTechniques(r) : '';
+
   const sharedIntro = state.isSharedResult
     ? `<div class="shared-intro">
         <p class="shared-intro-label">SOMEONE SHARED THIS WITH YOU</p>
@@ -1263,8 +1528,10 @@ function screenResult() {
         <button class="btn-try" onclick="resetToInput()">TRY IT ON ANY ARTICLE →</button>
       </div>` : '';
 
-  return `${sharedIntro}${demoBanner}${ssBanner}
+  return `${sharedIntro}${demoBanner}${ssBanner}${ageWarning}
   ${headline}${pub}
+  ${pubProfile}
+  ${instinctBanner}
   <div class="card">
     <p class="card-label">Verdict</p>
     <p class="verdict-quote" id="verdict-animated"></p>
@@ -1273,6 +1540,7 @@ function screenResult() {
     <p class="card-label" style="text-align:center;margin-bottom:10px">Content Fingerprint</p>
     ${renderRadar(r.scores, r.screenshotMode)}
   </div>
+  ${techniquesHtml}
   ${r.reasoning ? `
   <p class="card-label" style="margin-bottom:10px">Breakdown - tap to expand</p>
   ${renderScoreCard('truth',     r)}
@@ -1326,6 +1594,16 @@ function render() {
       state.isSharedResult = true;
       if (decoded.sourceUrl) state.url = decoded.sourceUrl;
       pendingVerdictAnimation = true;
+    }
+  } else if (hash.startsWith('#detect=')) {
+    // Bookmarklet: auto-detect the URL passed in the hash
+    const url = decodeURIComponent(hash.slice(8));
+    if (url) {
+      state.url = url;
+      history.replaceState(null,'',location.pathname+location.search);
+      render();
+      analyseUrl(url);
+      return;
     }
   }
   render();
