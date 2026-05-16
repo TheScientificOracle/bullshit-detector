@@ -4,6 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Bullshit Detector</title>
+<meta name="description" content="Does this article pass the test? The Bullshit Detector scores any news article for truth, clickbait, and ragebait — in seconds.">
+<!-- Open Graph -->
+<meta property="og:type"        content="website">
+<meta property="og:url"         content="https://thescientificoracle.github.io/bullshit-detector/">
+<meta property="og:title"       content="The Bullshit Detector">
+<meta property="og:description" content="Does this article pass the test? Scores any news article for truth, clickbait, and ragebait — in seconds.">
+<meta property="og:image"       content="https://thescientificoracle.github.io/bullshit-detector/og-preview.png">
+<meta property="og:image:width"  content="1200">
+<meta property="og:image:height" content="630">
+<!-- Twitter / X -->
+<meta name="twitter:card"        content="summary_large_image">
+<meta name="twitter:title"       content="The Bullshit Detector">
+<meta name="twitter:description" content="Does this article pass the test? Scores any news for truth, clickbait, and ragebait — in seconds.">
+<meta name="twitter:image"       content="https://thescientificoracle.github.io/bullshit-detector/og-preview.png">
 <style>
   :root {
     --bg:      #f5f2ed;
@@ -136,11 +150,21 @@
   .share-btn-sm { flex: 1; padding: 10px 6px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 10px; letter-spacing: 0.5px; cursor: pointer; border: none; text-align: center; }
   .btn-wa { background: #25D366; color: white; }
   .btn-wa:hover { opacity: 0.88; }
+  .btn-x  { background: #000; color: white; }
+  .btn-x:hover { opacity: 0.82; }
   .btn-cl { background: transparent; color: var(--subtle); border: 1px solid var(--border) !important; }
   .btn-cl:hover { border-color: #aaa !important; }
   .btn-cl.success { color: var(--truth); border-color: var(--truth) !important; }
   .btn-img { background: transparent; color: var(--subtle); border: 1px solid var(--border) !important; }
   .btn-img:hover { border-color: #aaa !important; }
+
+  /* ── Shared result intro banner ── */
+  .shared-intro { background: #111; color: #fff; border-radius: var(--radius); padding: 16px 18px; margin-bottom: 18px; }
+  .shared-intro-label { font-family: 'Courier New', monospace; font-size: 9px; letter-spacing: 2px; color: #888; margin-bottom: 6px; }
+  .shared-intro-heading { font-size: 15px; font-weight: bold; line-height: 1.4; margin-bottom: 10px; }
+  .shared-intro-sub { font-family: 'Courier New', monospace; font-size: 11px; color: #aaa; line-height: 1.6; margin-bottom: 14px; }
+  .btn-try { display: block; width: 100%; padding: 11px; background: #fff; color: #111; border: none; border-radius: 7px; font-family: 'Courier New', monospace; font-size: 11px; letter-spacing: 1px; font-weight: bold; cursor: pointer; text-align: center; }
+  .btn-try:hover { background: #f0ede8; }
 
   /* ── Re-run box ── */
   .rerun-box { background: #f8f7f4; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 12px; }
@@ -668,6 +692,13 @@ async function saveShareImage() {
   const a = document.createElement('a'); a.href = canvas.toDataURL('image/png');
   a.download = 'bsd-verdict.png'; a.click();
 }
+function shareX() {
+  const r = state.result;
+  const sc = `Truth ${r.scores.truth} · Clickbait ${r.scores.clickbait} · Ragebait ${r.scores.ragebait}`;
+  const text = `I just ran this through the bullshit detector and it stinks!\n\n${sc}\n\n"${r.verdict}"`;
+  const url  = location.href;
+  window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+}
 function copyShareLink() {
   navigator.clipboard.writeText(location.href)
     .then(() => { setState({ copiedBtn: 'link' }); setTimeout(() => setState({ copiedBtn: null }), 2200); })
@@ -981,8 +1012,11 @@ function renderShareSection(r) {
     <button ${copyStyle} onclick="copyShareMsg()">${copyLabel}</button>
     <div class="share-btn-row">
       <button class="share-btn-sm btn-wa" onclick="shareWhatsapp()">WHATSAPP</button>
+      <button class="share-btn-sm btn-x"  onclick="shareX()">X / TWITTER</button>
       <button class="${linkClass}" onclick="copyShareLink()">${linkLabel}</button>
-      <button class="share-btn-sm btn-img" onclick="saveShareImage()">SAVE IMAGE</button>
+    </div>
+    <div class="share-btn-row" style="margin-top:0">
+      <button class="share-btn-sm btn-img" style="flex:none;width:100%" onclick="saveShareImage()">SAVE IMAGE</button>
     </div>
   </div>`;
 }
@@ -1095,7 +1129,15 @@ function screenResult() {
         </div>
       </div>` : '';
 
-  return `${demoBanner}${ssBanner}
+  const sharedIntro = state.isSharedResult
+    ? `<div class="shared-intro">
+        <p class="shared-intro-label">SOMEONE SHARED THIS WITH YOU</p>
+        <p class="shared-intro-heading">The Bullshit Detector just called this out.</p>
+        <p class="shared-intro-sub">Paste any news article URL and get an instant score for truth, clickbait, and ragebait. No spin. No agenda. Just the signal.</p>
+        <button class="btn-try" onclick="resetToInput()">TRY IT ON ANY ARTICLE →</button>
+      </div>` : '';
+
+  return `${sharedIntro}${demoBanner}${ssBanner}
   ${headline}${pub}
   <div class="card">
     <p class="card-label">Verdict</p>
