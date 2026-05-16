@@ -234,6 +234,55 @@ function startTaglineCycle() {
   }, 3800);
 }
 
+// ─── WEAPON GRADE LABELS ──────────────────────────────────────────────────────
+function getWeaponLabel(type, score) {
+  if (type === 'ragebait') {
+    if (score >= 85) return { label: 'WEAPON GRADE',      color: '#dc2626' };
+    if (score >= 65) return { label: 'ENGINEERED OUTRAGE',color: '#ea580c' };
+    if (score >= 45) return { label: 'EMOTIONALLY CHARGED',color:'#ca8a04' };
+    return null;
+  }
+  if (type === 'clickbait') {
+    if (score >= 85) return { label: 'PURE CLICKBAIT',    color: '#dc2626' };
+    if (score >= 65) return { label: 'TABLOID TERRITORY', color: '#ea580c' };
+    if (score >= 45) return { label: 'HEADLINE INFLATION',color: '#ca8a04' };
+    return null;
+  }
+  if (type === 'truth') {
+    if (score <= 20) return { label: 'NO EVIDENCE',       color: '#dc2626' };
+    if (score <= 40) return { label: 'UNSUBSTANTIATED',   color: '#ea580c' };
+    if (score <= 55) return { label: 'PARTIAL EVIDENCE',  color: '#ca8a04' };
+    return null;
+  }
+  return null;
+}
+function getBiggestWeaponLabel(scores) {
+  // Returns the single most dramatic label for share messages
+  const rl = getWeaponLabel('ragebait',  scores.ragebait);
+  const cl = getWeaponLabel('clickbait', scores.clickbait);
+  const tl = getWeaponLabel('truth',     scores.truth);
+  if (rl && scores.ragebait  >= 85) return rl.label;
+  if (cl && scores.clickbait >= 85) return cl.label;
+  if (rl && scores.ragebait  >= 65) return rl.label;
+  if (tl && scores.truth     <= 20) return tl.label;
+  if (cl && scores.clickbait >= 65) return cl.label;
+  return null;
+}
+
+// ─── PERSONAL DETECTION COUNTER ───────────────────────────────────────────────
+function getPersonalCount() {
+  try { return parseInt(localStorage.getItem('bsd_personal') || '0'); } catch { return 0; }
+}
+function incrementPersonalCount() {
+  try {
+    if (!sessionStorage.getItem('bsd_psess')) {
+      const n = getPersonalCount() + 1;
+      localStorage.setItem('bsd_personal', n);
+      sessionStorage.setItem('bsd_psess', '1');
+    }
+  } catch {}
+}
+
 // ─── VERDICTS COUNTER ─────────────────────────────────────────────────────────
 const COUNT_BASE = 28419;
 
@@ -455,6 +504,16 @@ function renderRadar(scores, screenshotMode) {
     <text x="${truthAxis.x}"  y="${truthAxis.y - 14}" text-anchor="middle" font-family="'Courier New',monospace" font-size="9.5" fill="#16a34a" font-weight="bold" letter-spacing="1.2">TRUTH</text>
     <text x="${cbAxis.x + 6}" y="${cbAxis.y + 5}"    text-anchor="start"  font-family="'Courier New',monospace" font-size="9.5" fill="#ea580c" font-weight="bold" letter-spacing="1.2">CLICKBAIT</text>
     <text x="${rbAxis.x - 6}" y="${rbAxis.y + 5}"    text-anchor="end"    font-family="'Courier New',monospace" font-size="9.5" fill="#dc2626" font-weight="bold" letter-spacing="1.2">RAGEBAIT</text>
+    ${(()=>{
+      const wlRB = getWeaponLabel('ragebait',  scores.ragebait);
+      const wlCB = getWeaponLabel('clickbait', scores.clickbait);
+      const wlT  = getWeaponLabel('truth',     scores.truth);
+      let stamps = '';
+      if (wlRB) stamps += `<text x="${rbAxis.x - 6}" y="${rbAxis.y + 17}" text-anchor="end" font-family="'Courier New',monospace" font-size="7.5" fill="${wlRB.color}" font-weight="bold" letter-spacing="0.8">${wlRB.label}</text>`;
+      if (wlCB) stamps += `<text x="${cbAxis.x + 6}" y="${cbAxis.y + 17}" text-anchor="start" font-family="'Courier New',monospace" font-size="7.5" fill="${wlCB.color}" font-weight="bold" letter-spacing="0.8">${wlCB.label}</text>`;
+      if (wlT)  stamps += `<text x="${truthAxis.x}"  y="${truthAxis.y - 24}" text-anchor="middle" font-family="'Courier New',monospace" font-size="7.5" fill="${wlT.color}" font-weight="bold" letter-spacing="0.8">${wlT.label}</text>`;
+      return stamps;
+    })()}
     ${legend}
   </svg>`;
 }
@@ -558,16 +617,20 @@ function clearHash() {
 
 // ─── SHARE HELPERS ────────────────────────────────────────────────────────────
 function getShareMessage() {
-  const r  = state.result;
-  const sc = `Truth ${r.scores.truth} · Clickbait ${r.scores.clickbait} · Ragebait ${r.scores.ragebait}`;
+  const r      = state.result;
+  const weapon = getBiggestWeaponLabel(r.scores);
+  const sc     = `Truth ${r.scores.truth} · Clickbait ${r.scores.clickbait} · Ragebait ${r.scores.ragebait}${weapon ? ` (${weapon})` : ''}`;
   const footer = `thescientificoracle.github.io/bullshit-detector/`;
+  const hook   = weapon === 'WEAPON GRADE'
+    ? `I just ran this through the bullshit detector. WEAPON GRADE ragebait.`
+    : `I just ran this through the bullshit detector and it stinks!`;
 
   if (state.shareTab === 'full' && r.headline) {
     const hl  = r.headline.length > 72 ? r.headline.slice(0, 69) + '…' : r.headline;
     const pub = r.publication ? ` (${r.publication})` : '';
-    return `I just ran this through the bullshit detector and it stinks!\n\nOn "${hl}"${pub}:\n${sc}\n\n"${r.verdict}"\n\n${footer}`;
+    return `${hook}\n\nOn "${hl}"${pub}:\n${sc}\n\n"${r.verdict}"\n\n${footer}`;
   }
-  return `I just ran this through the bullshit detector and it stinks!\n\n${sc}\n\n"${r.verdict}"\n\n${footer}`;
+  return `${hook}\n\n${sc}\n\n"${r.verdict}"\n\n${footer}`;
 }
 
 function switchShareTab(tab) { setState({ shareTab: tab }); }
@@ -636,37 +699,94 @@ function wrapText(ctx, text, x, y, maxW, lineH) {
 }
 
 async function generateShareCard(result) {
-  const DPR=2, W=560, H=400, pad=40;
+  const DPR=2, W=640, H=400;
   const canvas = document.createElement('canvas');
   canvas.width=W*DPR; canvas.height=H*DPR;
   const ctx = canvas.getContext('2d');
   ctx.scale(DPR, DPR);
 
-  // Background
+  const sc = result.scores;
+  const weapon = getBiggestWeaponLabel(sc);
+
+  // ── Background ──
   ctx.fillStyle='#f5f0e8'; ctx.fillRect(0,0,W,H);
 
-  // Header + footer rules
-  ctx.strokeStyle='#c8c0b4'; ctx.lineWidth=1;
-  ctx.beginPath(); ctx.moveTo(pad,52); ctx.lineTo(W-pad,52); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(pad,H-38); ctx.lineTo(W-pad,H-38); ctx.stroke();
+  // Double border frame
+  ctx.strokeStyle='#c8bfb0'; ctx.lineWidth=1;
+  ctx.strokeRect(14,14,W-28,H-28);
+  ctx.strokeStyle='#ddd6c8'; ctx.lineWidth=0.5;
+  ctx.strokeRect(18,18,W-36,H-36);
 
-  // Title
-  ctx.fillStyle='#1a1208'; ctx.textAlign='center';
-  ctx.font='bold 16px Georgia,serif';
-  ctx.fillText('THE BULLSHIT DETECTOR', W/2, 33);
+  // ── Header strip ──
+  ctx.fillStyle='#111'; ctx.fillRect(14,14,W-28,44);
+  ctx.fillStyle='#fff'; ctx.textAlign='center';
+  ctx.font='bold 12px "Courier New",monospace';
+  ctx.letterSpacing='3px';
+  ctx.fillText('THE BULLSHIT DETECTOR', W/2, 41);
+  ctx.letterSpacing='0px';
 
-  // Radar chart
-  drawRadarCard(ctx, W/2, 168, 88, result.scores);
+  // ── Left: Radar chart ──
+  const radarCX=186, radarCY=232, radarR=100;
+  drawRadarCard(ctx, radarCX, radarCY, radarR, sc);
+
+  // ── Divider ──
+  ctx.strokeStyle='#c8bfb0'; ctx.lineWidth=0.75; ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(306,70); ctx.lineTo(306,H-30); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // ── Right: Verdict + scores ──
+  const rx=325;
 
   // Verdict
   if (result.verdict) {
-    ctx.font='italic 13.5px Georgia,serif'; ctx.fillStyle='#2a1a08'; ctx.textAlign='center';
-    wrapText(ctx, `"${result.verdict}"`, W/2, 296, W-pad*2.5, 21);
+    ctx.fillStyle='#1a1208'; ctx.textAlign='left';
+    ctx.font='italic 15px Georgia,serif';
+    const lastY = wrapText(ctx, `"${result.verdict}"`, rx, 88, W-rx-20, 23);
+    // Rule after verdict
+    ctx.strokeStyle='#ddd6c8'; ctx.lineWidth=0.75;
+    ctx.beginPath(); ctx.moveTo(rx, lastY+14); ctx.lineTo(W-24, lastY+14); ctx.stroke();
   }
 
-  // Footer
+  // Score labels with weapon grades
+  const scoreRows = [
+    { label:'TRUTH',     score: sc.truth,     color:'#16a34a', type:'truth'     },
+    { label:'CLICKBAIT', score: sc.clickbait, color:'#ea580c', type:'clickbait' },
+    { label:'RAGEBAIT',  score: sc.ragebait,  color:'#dc2626', type:'ragebait'  },
+  ];
+  let sy = 260;
+  for (const row of scoreRows) {
+    const wl = getWeaponLabel(row.type, row.score);
+    ctx.fillStyle=row.color; ctx.textAlign='left';
+    ctx.font=`bold 11px "Courier New",monospace`;
+    ctx.fillText(`${row.label}`, rx, sy);
+    ctx.font=`bold 20px "Courier New",monospace`;
+    ctx.fillText(`${row.score}`, rx+90, sy);
+    if (wl) {
+      ctx.font=`bold 9px "Courier New",monospace`;
+      ctx.fillStyle = wl.color;
+      ctx.fillText(wl.label, rx+130, sy);
+    }
+    sy += 30;
+  }
+
+  // ── Weapon stamp (if earned) ──
+  if (weapon) {
+    ctx.save();
+    ctx.translate(W-60, 95);
+    ctx.rotate(-0.35);
+    ctx.strokeStyle='rgba(220,38,38,0.55)'; ctx.lineWidth=2.5;
+    ctx.strokeRect(-50,-14,100,28);
+    ctx.fillStyle='rgba(220,38,38,0.55)'; ctx.textAlign='center';
+    ctx.font='bold 10px "Courier New",monospace';
+    ctx.fillText(weapon, 0, 5);
+    ctx.restore();
+  }
+
+  // ── Footer ──
+  ctx.strokeStyle='#c8bfb0'; ctx.lineWidth=0.75;
+  ctx.beginPath(); ctx.moveTo(14, H-30); ctx.lineTo(W-14, H-30); ctx.stroke();
   ctx.font='9px "Courier New",monospace'; ctx.fillStyle='#aaa'; ctx.textAlign='center';
-  ctx.fillText('thescientificoracle.github.io/bullshit-detector/', W/2, H-20);
+  ctx.fillText('thescientificoracle.github.io/bullshit-detector/', W/2, H-14);
 
   return canvas;
 }
@@ -761,6 +881,7 @@ async function analyseUrl(url) {
     result.sourceUrl = url;
     stopPhases();
     setResultHash(result);
+    incrementPersonalCount();
     pendingVerdictAnimation = true;
     setState({ screen: 'result', result, isDemo: false, openCard: null, isSharedResult: false, shareTab: 'short', copiedBtn: null });
   } catch (err) {
@@ -782,6 +903,7 @@ async function analyseScreenshots(images) {
     });
     stopPhases();
     setResultHash(result);
+    incrementPersonalCount();
     pendingVerdictAnimation = true;
     setState({ screen: 'result', result, isDemo: false, openCard: null, isSharedResult: false, shareTab: 'short', copiedBtn: null });
   } catch (err) {
@@ -1129,11 +1251,15 @@ function screenResult() {
         </div>
       </div>` : '';
 
+  const personalCount = getPersonalCount();
+  const personalLine  = personalCount > 0
+    ? `You've run the detector ${personalCount} time${personalCount===1?'':'s'}.`
+    : `${getCount().toLocaleString()} articles detected so far.`;
   const sharedIntro = state.isSharedResult
     ? `<div class="shared-intro">
         <p class="shared-intro-label">SOMEONE SHARED THIS WITH YOU</p>
         <p class="shared-intro-heading">The Bullshit Detector just called this out.</p>
-        <p class="shared-intro-sub">Paste any news article URL and get an instant score for truth, clickbait, and ragebait. No spin. No agenda. Just the signal.</p>
+        <p class="shared-intro-sub">Paste any news article or upload screenshots — get an instant verdict on truth, clickbait, and ragebait. No spin. No agenda. Just the signal.<br><br>${personalLine}</p>
         <button class="btn-try" onclick="resetToInput()">TRY IT ON ANY ARTICLE →</button>
       </div>` : '';
 
