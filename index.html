@@ -836,22 +836,14 @@ function animateVerdict() {
 function encodeResult(result) {
   // Only encode the fields needed for a useful shared view — reasoning arrays make URLs enormous
   const slim = {
-    headline:      result.headline,
-    publication:   result.publication,
-    publish_date:  result.publish_date || null,
-    scores:        result.scores,
-    verdict:       result.verdict,
-    sourceUrl:     result.sourceUrl,
+    headline:       result.headline,
+    publication:    result.publication,
+    publish_date:   result.publish_date || null,
+    scores:         result.scores,
+    verdict:        result.verdict,
+    sourceUrl:      result.sourceUrl,
     screenshotMode: result.screenshotMode || false,
-    claim_checks:  result.claim_checks?.map(cc => ({
-      claim:   cc.claim,
-      verdict: cc.verdict,
-      note:    cc.note,
-      source:      cc.source     || null,
-      source_url:  cc.source_url || null,
-      confidence:  cc.confidence || null,
-      verified_by_search: cc.verified_by_search || false,
-    })) || [],
+    // claim_checks intentionally omitted — they dominate URL length
   };
   // Use URL-safe base64 (no +, /, = chars) so links survive social platforms
   try {
@@ -881,7 +873,7 @@ function clearHash() {
 function getShareMessage() {
   const r      = state.result;
   const weapon = getBiggestWeaponLabel(r.scores);
-  const sc     = `Truth ${r.scores.truth} · Clickbait ${r.scores.clickbait} · Ragebait ${r.scores.ragebait}${weapon ? ` (${weapon})` : ''}`;
+  const sc     = `Truth ${r.scores.truth} · Clickbait ${r.scores.clickbait} · Ragebait ${r.scores.ragebait}`;
   const footer = `thescientificoracle.github.io/bullshit-detector/`;
   const hook   = weapon === 'WEAPONS GRADE'
     ? `I just ran this through the bullshit detector. WEAPONS GRADE ragebait.`
@@ -1082,9 +1074,12 @@ function shareX() {
   window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
 }
 function copyShareLink() {
-  navigator.clipboard.writeText(location.href)
+  // Copy the base URL — hash fragments get stripped by LinkedIn/WhatsApp anyway
+  // and the full #r= URL is enormous. Base URL + share image is the right pattern.
+  const base = 'https://thescientificoracle.github.io/bullshit-detector/';
+  navigator.clipboard.writeText(base)
     .then(() => { setState({ copiedBtn: 'link' }); setTimeout(() => setState({ copiedBtn: null }), 2200); })
-    .catch(() => { prompt('Copy this link:', location.href); });
+    .catch(() => { prompt('Copy this link:', base); });
 }
 function rerunShared() {
   if (state.result && state.result.sourceUrl) {
