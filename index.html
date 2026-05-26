@@ -1613,8 +1613,12 @@ function screenInput() {
   ${liveAnalysisCount > 0 ? `<p class="count-line"><span class="count-num">${fmtCount(liveAnalysisCount)}</span> articles run through the detector</p>` : ''}
   ${!hasImages ? renderHallOfVerdicts() : ''}
   ${!hasImages ? renderHallOfShame() : ''}
-  ${!hasImages ? `<div style="text-align:center;margin:4px 0 18px">
-    <button onclick="openScorecards()" style="background:none;border:none;font-family:'Courier New',monospace;font-size:10px;letter-spacing:1.2px;color:var(--muted);cursor:pointer;text-decoration:underline;padding:0">VIEW PUBLISHER SCORECARDS →</button>
+  ${!hasImages ? `<div onclick="openScorecards()" style="background:white;border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px;cursor:pointer;display:flex;align-items:center;justify-content:space-between" onmouseover="this.style.borderColor='#aaa'" onmouseout="this.style.borderColor='var(--border)'">
+    <div>
+      <p style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1.5px;color:var(--muted);margin-bottom:4px">PUBLISHER SCORECARDS</p>
+      <p style="font-size:13px;color:var(--text);line-height:1.4">Which outlets publish the most ragebait?</p>
+    </div>
+    <span style="font-family:'Courier New',monospace;font-size:14px;color:var(--muted)">→</span>
   </div>` : ''}
   ${!hasImages ? `<div class="bookmarklet-section">
     <p class="bookmarklet-label">DETECT FROM ANY PAGE</p>
