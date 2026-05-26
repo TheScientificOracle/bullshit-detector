@@ -694,7 +694,7 @@ function renderRadar(scores, screenshotMode) {
   const cbDash  = screenshotMode ? `<circle cx="${dCB.x}" cy="${dCB.y}" r="13" fill="none" stroke="#ea580c" stroke-width="1" stroke-dasharray="2.5,2" opacity="0.6"/>` : '';
   const legend  = screenshotMode ? `<text x="150" y="278" text-anchor="middle" font-family="'Courier New',monospace" font-size="7.5" fill="#999" letter-spacing="0.8">~ = INDICATIVE · SCREENSHOT MODE</text>` : '';
 
-  return `<svg viewBox="0 0 300 285" style="width:100%;max-width:300px;display:block;margin:0 auto">
+  return `<svg viewBox="0 0 320 285" style="width:100%;max-width:320px;display:block;margin:0 auto">
     ${rings}${axes}
     <polygon points="${dT.x},${dT.y} ${dCB.x},${dCB.y} ${dRB.x},${dRB.y}" fill="rgba(30,20,10,0.10)" stroke="#444" stroke-width="2" stroke-linejoin="round"/>
     ${tDash}<circle cx="${dT.x}"  cy="${dT.y}"  r="7" fill="white" stroke="#16a34a" stroke-width="2"/><circle cx="${dT.x}"  cy="${dT.y}"  r="3" fill="#16a34a"/>
@@ -740,6 +740,8 @@ const state = {
 
 let phaseTimer = null;
 let pendingVerdictAnimation = false;
+let _sharePreviewCache = null;   // cached canvas from generateShareCard
+let _sharePreviewFor   = null;   // which result object it was generated for
 
 function setState(patch) {
   Object.assign(state, patch);
@@ -769,7 +771,8 @@ function stopPhases() { clearInterval(phaseTimer); phaseTimer = null; }
 function animateVerdict() {
   const el = document.getElementById('verdict-animated');
   if (!el || !state.result) return;
-  const words = state.result.verdict.split(' ');
+  const verdict = state.result.verdict;
+  const words = verdict.split(' ');
   el.innerHTML = '';
   words.forEach((word, i) => {
     const span = document.createElement('span');
@@ -777,10 +780,14 @@ function animateVerdict() {
     span.style.cssText = `opacity:0;transition:opacity 0.28s ease ${(i * 0.065).toFixed(2)}s`;
     el.appendChild(span);
   });
+  const totalMs = ((words.length - 1) * 0.065 + 0.28 + 0.1) * 1000;
   requestAnimationFrame(() =>
-    requestAnimationFrame(() =>
-      el.querySelectorAll('span').forEach(s => s.style.opacity = '1')
-    )
+    requestAnimationFrame(() => {
+      el.querySelectorAll('span').forEach(s => s.style.opacity = '1');
+      // After animation finishes, revert to plain text — prevents mobile browsers
+      // resetting span opacity:0 when the element scrolls off-screen
+      setTimeout(() => { if (el.isConnected) el.textContent = verdict; }, totalMs);
+    })
   );
 }
 
@@ -805,10 +812,21 @@ function encodeResult(result) {
       verified_by_search: cc.verified_by_search || false,
     })) || [],
   };
-  try { return btoa(unescape(encodeURIComponent(JSON.stringify(slim)))); } catch { return null; }
+  // Use URL-safe base64 (no +, /, = chars) so links survive social platforms
+  try {
+    return btoa(unescape(encodeURIComponent(JSON.stringify(slim))))
+      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+  } catch { return null; }
 }
-function decodeResult(hash) {
-  try { return JSON.parse(decodeURIComponent(escape(atob(hash)))); } catch { return null; }
+function decodeResult(raw) {
+  try {
+    // URL-decode first (social platforms often encode hash chars like + → %2B)
+    const decoded = decodeURIComponent(raw);
+    // Convert URL-safe base64 back to standard, re-add padding
+    let b64 = decoded.replace(/-/g, '+').replace(/_/g, '/');
+    while (b64.length % 4) b64 += '=';
+    return JSON.parse(decodeURIComponent(escape(atob(b64))));
+  } catch { return null; }
 }
 function setResultHash(result) {
   const encoded = encodeResult(result);
@@ -1032,6 +1050,23 @@ function rerunShared() {
     state.url = state.result.sourceUrl;
     analyseUrl(state.result.sourceUrl);
   }
+}
+
+function refreshSharePreview() {
+  if (state.screen !== 'result' || !state.result) return;
+  const drawToCanvas = (card) => {
+    const cv = document.getElementById('share-preview-canvas');
+    if (!cv) return;
+    cv.width = card.width; cv.height = card.height;
+    cv.getContext('2d').drawImage(card, 0, 0);
+  };
+  if (_sharePreviewFor === state.result && _sharePreviewCache) {
+    drawToCanvas(_sharePreviewCache); return;
+  }
+  generateShareCard(state.result).then(card => {
+    _sharePreviewCache = card; _sharePreviewFor = state.result;
+    drawToCanvas(card);
+  });
 }
 
 // ─── DRAG AND DROP ────────────────────────────────────────────────────────────
@@ -1361,6 +1396,7 @@ function renderShareSection(r) {
 
   return `<div class="share-wrap">
     <p class="card-label" style="margin-bottom:10px">Send this result</p>
+    <canvas id="share-preview-canvas" style="width:100%;border-radius:6px;display:block;margin-bottom:12px;background:#f5f0eb"></canvas>
     ${tabs}
     <div class="msg-preview"><p class="msg-preview-text">${msgDisplay}</p></div>
     <button ${copyStyle} onclick="copyShareMsg()">${copyLabel}</button>
@@ -1528,7 +1564,7 @@ function screenResult() {
   ${instinctBanner}
   <div class="card">
     <p class="card-label">Verdict</p>
-    <p class="verdict-quote" id="verdict-animated"></p>
+    <p class="verdict-quote" id="verdict-animated">${r.verdict}</p>
   </div>
   <div class="card" style="padding:16px">
     <p class="card-label" style="text-align:center;margin-bottom:10px">Content Fingerprint</p>
@@ -1572,6 +1608,7 @@ function render() {
     pendingVerdictAnimation = false;
     requestAnimationFrame(() => animateVerdict());
   }
+  if (s === 'result') requestAnimationFrame(refreshSharePreview);
 }
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
