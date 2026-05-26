@@ -703,17 +703,17 @@ function renderRadar(scores, screenshotMode) {
     <text x="${dT.x}"       y="${dT.y - 16}"  text-anchor="middle" font-family="'Courier New',monospace" font-size="11.5" fill="#16a34a" font-weight="bold">${tLabel}</text>
     <text x="${dCB.x + 15}" y="${dCB.y + 4}"  text-anchor="start"  font-family="'Courier New',monospace" font-size="11.5" fill="#ea580c" font-weight="bold">${cbLabel}</text>
     <text x="${dRB.x - 15}" y="${dRB.y + 4}"  text-anchor="end"    font-family="'Courier New',monospace" font-size="11.5" fill="#dc2626" font-weight="bold">${scores.ragebait}</text>
-    <text x="${truthAxis.x}"  y="${truthAxis.y - 14}" text-anchor="middle" font-family="'Courier New',monospace" font-size="9.5" fill="#16a34a" font-weight="bold" letter-spacing="1.2">TRUTH</text>
-    <text x="${cbAxis.x + 6}" y="${cbAxis.y + 5}"    text-anchor="start"  font-family="'Courier New',monospace" font-size="9.5" fill="#ea580c" font-weight="bold" letter-spacing="1.2">CLICKBAIT</text>
-    <text x="${rbAxis.x - 6}" y="${rbAxis.y + 5}"    text-anchor="end"    font-family="'Courier New',monospace" font-size="9.5" fill="#dc2626" font-weight="bold" letter-spacing="1.2">RAGEBAIT</text>
+    <text x="${truthAxis.x}" y="${truthAxis.y - 14}" text-anchor="middle" font-family="'Courier New',monospace" font-size="9.5" fill="#16a34a" font-weight="bold" letter-spacing="1.2">TRUTH</text>
+    <text x="${cbAxis.x}"   y="${cbAxis.y + 16}"   text-anchor="middle" font-family="'Courier New',monospace" font-size="9.5" fill="#ea580c" font-weight="bold" letter-spacing="1.2">CLICKBAIT</text>
+    <text x="${rbAxis.x}"   y="${rbAxis.y + 16}"   text-anchor="middle" font-family="'Courier New',monospace" font-size="9.5" fill="#dc2626" font-weight="bold" letter-spacing="1.2">RAGEBAIT</text>
     ${(()=>{
       const wlRB = getWeaponLabel('ragebait',  scores.ragebait);
       const wlCB = getWeaponLabel('clickbait', scores.clickbait);
       const wlT  = getWeaponLabel('truth',     scores.truth);
       let stamps = '';
-      if (wlRB) stamps += `<text x="${rbAxis.x - 6}" y="${rbAxis.y + 17}" text-anchor="end" font-family="'Courier New',monospace" font-size="7.5" fill="${wlRB.color}" font-weight="bold" letter-spacing="0.8">${wlRB.label}</text>`;
-      if (wlCB) stamps += `<text x="${cbAxis.x + 6}" y="${cbAxis.y + 17}" text-anchor="start" font-family="'Courier New',monospace" font-size="7.5" fill="${wlCB.color}" font-weight="bold" letter-spacing="0.8">${wlCB.label}</text>`;
-      if (wlT)  stamps += `<text x="${truthAxis.x}"  y="${truthAxis.y - 24}" text-anchor="middle" font-family="'Courier New',monospace" font-size="7.5" fill="${wlT.color}" font-weight="bold" letter-spacing="0.8">${wlT.label}</text>`;
+      if (wlRB) stamps += `<text x="${rbAxis.x}" y="${rbAxis.y + 27}" text-anchor="middle" font-family="'Courier New',monospace" font-size="7.5" fill="${wlRB.color}" font-weight="bold" letter-spacing="0.8">${wlRB.label}</text>`;
+      if (wlCB) stamps += `<text x="${cbAxis.x}" y="${cbAxis.y + 27}" text-anchor="middle" font-family="'Courier New',monospace" font-size="7.5" fill="${wlCB.color}" font-weight="bold" letter-spacing="0.8">${wlCB.label}</text>`;
+      if (wlT)  stamps += `<text x="${truthAxis.x}" y="${truthAxis.y - 24}" text-anchor="middle" font-family="'Courier New',monospace" font-size="7.5" fill="${wlT.color}" font-weight="bold" letter-spacing="0.8">${wlT.label}</text>`;
       return stamps;
     })()}
     ${legend}
@@ -903,9 +903,9 @@ function drawRadarCard(ctx, cx, cy, r, scores) {
   // Axis labels
   const [tPt,cPt,rPt] = [TA,CA,RA].map(a => pt(a,r));
   ctx.font='bold 9px "Courier New",monospace';
-  ctx.fillStyle='#16a34a'; ctx.textAlign='center'; ctx.fillText('TRUTH', tPt.x, tPt.y-13);
-  ctx.fillStyle='#ea580c'; ctx.textAlign='left';   ctx.fillText('CLICKBAIT', cPt.x+6, cPt.y+5);
-  ctx.fillStyle='#dc2626'; ctx.textAlign='right';  ctx.fillText('RAGEBAIT', rPt.x-6, rPt.y+5);
+  ctx.fillStyle='#16a34a'; ctx.textAlign='center'; ctx.fillText('TRUTH',     tPt.x,   tPt.y-13);
+  ctx.fillStyle='#ea580c'; ctx.textAlign='center'; ctx.fillText('CLICKBAIT', cPt.x,   cPt.y+16);
+  ctx.fillStyle='#dc2626'; ctx.textAlign='center'; ctx.fillText('RAGEBAIT',  rPt.x,   rPt.y+16);
 }
 
 function wrapText(ctx, text, x, y, maxW, lineH) {
