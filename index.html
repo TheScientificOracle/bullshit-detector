@@ -216,13 +216,6 @@
   .claim-share-btn:hover { border-color: #aaa; color: #555; }
   .claim-share-btn.copied { color: var(--truth); border-color: var(--truth); }
 
-  /* ── Bookmarklet ── */
-  .bookmarklet-section { background: #f8f7f4; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-top: 16px; }
-  .bookmarklet-hint { font-family: 'Courier New',monospace; font-size: 10px; color: var(--muted); line-height: 1.6; margin-bottom: 10px; }
-  .bookmarklet-link { display: inline-block; background: #111; color: #fff; font-family: 'Courier New',monospace; font-size: 11px; letter-spacing: 1px; padding: 8px 16px; border-radius: 6px; text-decoration: none; cursor: grab; }
-  .bookmarklet-link:hover { background: #333; }
-  .bookmarklet-label { font-family: 'Courier New',monospace; font-size: 8px; letter-spacing: 2px; color: var(--muted); margin-bottom: 6px; }
-
   /* ── Hall of Shame ── */
   .shame-grid { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
   .shame-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; cursor: pointer; }
@@ -506,6 +499,51 @@ async function fetchLiveCount() {
   } catch { /* fail silently */ }
 }
 
+// ─── RECENT ANALYSES (live feed) ─────────────────────────────────────────────
+async function fetchRecentAnalyses() {
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/user_analyses?select=id,headline,publisher_name,domain,truth_score,clickbait_score,ragebait_score,screenshot_mode&order=created_at.desc&limit=6`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+    );
+    if (!res.ok) return;
+    const rows = await res.json();
+    if (!Array.isArray(rows) || rows.length === 0) return;
+    recentAnalyses = rows;
+    if (state.screen === 'input') render();
+  } catch { /* fail silently */ }
+}
+
+async function loadRecentResult(uuid) {
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/user_analyses?id=eq.${uuid}&select=*&limit=1`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+    );
+    if (!res.ok) return;
+    const rows = await res.json();
+    if (!rows || !rows.length) return;
+    const row = rows[0];
+    const result = {
+      headline:       row.headline       || null,
+      publication:    row.publisher_name || null,
+      publish_date:   row.publish_date   || null,
+      scores:         { truth: row.truth_score, clickbait: row.clickbait_score, ragebait: row.ragebait_score },
+      verdict:        row.verdict        || null,
+      sourceUrl:      row.source_url     || null,
+      screenshotMode: row.screenshot_mode || false,
+    };
+    currentShareUuid        = uuid;
+    state.result            = result;
+    state.screen            = 'result';
+    state.isDemo            = false;
+    state.isSharedResult    = true;
+    pendingVerdictAnimation = true;
+    history.replaceState(null, '', `?v=${uuid}`);
+    render();
+  } catch { /* fail silently */ }
+}
+
 // ─── STORE ANALYSIS ───────────────────────────────────────────────────────────
 async function storeAnalysis(result, analysisType, sourceUrl) {
   try {
@@ -513,13 +551,13 @@ async function storeAnalysis(result, analysisType, sourceUrl) {
     if (sourceUrl) {
       try { domain = new URL(sourceUrl).hostname.replace(/^www\./, ''); } catch {}
     }
-    await fetch(`${SUPABASE_URL}/rest/v1/user_analyses`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/user_analyses`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'apikey': SUPABASE_ANON,
         'Authorization': `Bearer ${SUPABASE_ANON}`,
-        'Prefer': 'return=minimal',
+        'Prefer': 'return=representation',
       },
       body: JSON.stringify({
         source_url:      sourceUrl           || null,
@@ -535,6 +573,16 @@ async function storeAnalysis(result, analysisType, sourceUrl) {
         publish_date:    result.publish_date || null,
       }),
     });
+    if (res.ok) {
+      try {
+        const rows = await res.json();
+        if (rows && rows[0] && rows[0].id) {
+          currentShareUuid = rows[0].id;
+          // Update URL so sharing and copy-link use the real result URL
+          history.replaceState(null, '', `?v=${currentShareUuid}`);
+        }
+      } catch {}
+    }
     // Optimistically update local count
     if (liveAnalysisCount !== null) {
       liveAnalysisCount++;
@@ -544,6 +592,8 @@ async function storeAnalysis(result, analysisType, sourceUrl) {
     if (domain && publisherScorecardsData) {
       publisherScorecardsData = null;
     }
+    // Invalidate recent analyses cache so live feed refreshes
+    recentAnalyses = null;
   } catch { /* fire and forget — never block the result */ }
 }
 
@@ -783,6 +833,8 @@ let _sharePreviewFor   = null;   // which result object it was generated for
 let liveAnalysisCount      = null;   // null = not yet loaded; number once fetched
 let publisherScorecardsData = null;  // null = not yet fetched; object once loaded
 let scorecardSortMode      = 'ragebait'; // 'ragebait' | 'truth' | 'clickbait' | 'count'
+let recentAnalyses         = null;   // null = not yet loaded; array of last 6 rows
+let currentShareUuid       = null;   // UUID from Supabase after a successful analysis
 
 function setState(patch) {
   Object.assign(state, patch);
@@ -874,7 +926,9 @@ function getShareMessage() {
   const r      = state.result;
   const weapon = getBiggestWeaponLabel(r.scores);
   const sc     = `Truth ${r.scores.truth} · Clickbait ${r.scores.clickbait} · Ragebait ${r.scores.ragebait}`;
-  const footer = `thescientificoracle.github.io/bullshit-detector/`;
+  const footer = currentShareUuid
+    ? `thescientificoracle.github.io/bullshit-detector/?v=${currentShareUuid}`
+    : `thescientificoracle.github.io/bullshit-detector/`;
   const hook   = weapon === 'WEAPONS GRADE'
     ? `I just ran this through the bullshit detector. WEAPONS GRADE ragebait.`
     : `I just ran this through the bullshit detector and it stinks!`;
@@ -1074,12 +1128,12 @@ function shareX() {
   window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
 }
 function copyShareLink() {
-  // Copy the base URL — hash fragments get stripped by LinkedIn/WhatsApp anyway
-  // and the full #r= URL is enormous. Base URL + share image is the right pattern.
-  const base = 'https://thescientificoracle.github.io/bullshit-detector/';
-  navigator.clipboard.writeText(base)
+  const url = currentShareUuid
+    ? `https://thescientificoracle.github.io/bullshit-detector/?v=${currentShareUuid}`
+    : `https://thescientificoracle.github.io/bullshit-detector/`;
+  navigator.clipboard.writeText(url)
     .then(() => { setState({ copiedBtn: 'link' }); setTimeout(() => setState({ copiedBtn: null }), 2200); })
-    .catch(() => { prompt('Copy this link:', base); });
+    .catch(() => { prompt('Copy this link:', url); });
 }
 function rerunShared() {
   if (state.result && state.result.sourceUrl) {
@@ -1228,7 +1282,11 @@ function handleSubmit() {
 function resetToInput() {
   stopPhases();
   clearHash();
+  currentShareUuid = null;
+  history.replaceState(null, '', location.pathname); // clear any ?v= param
   setState({ screen: 'input', result: null, detectedFormat: null, detectedAccess: null, errorMsg: '', uploadedImages: [], openCard: null, isDemo: false, shareTab: 'short', copiedBtn: null, isSharedResult: false });
+  // Refresh live feed with latest data
+  if (!recentAnalyses) fetchRecentAnalyses();
 }
 
 function toggleCard(type) { setState({ openCard: state.openCard === type ? null : type }); }
@@ -1332,6 +1390,38 @@ function renderHallOfShame() {
     </div>
     <div class="shame-grid">${cards}</div>
   </div>`;
+}
+
+// ─── LIVE FEED ────────────────────────────────────────────────────────────────
+function renderLiveFeed() {
+  if (recentAnalyses && recentAnalyses.length > 0) {
+    const cards = recentAnalyses.map(a => {
+      const pub = (a.publisher_name || a.domain || 'Unknown').toUpperCase();
+      const hl  = a.headline ? (a.headline.length > 65 ? a.headline.slice(0, 62) + '…' : a.headline) : '—';
+      const scores = { truth: a.truth_score, clickbait: a.clickbait_score, ragebait: a.ragebait_score };
+      const wl  = getBiggestWeaponLabel(scores);
+      const wBadge = wl ? `<span style="font-family:'Courier New',monospace;font-size:7.5px;font-weight:bold;color:#dc2626;background:#fef2f2;border:1px solid #fca5a5;border-radius:3px;padding:1px 5px">${wl}</span>` : '';
+      return `<div class="shame-card" onclick="loadRecentResult('${a.id}')">
+        <p class="shame-card-pub">${pub}</p>
+        <p class="shame-card-hl">"${hl}"</p>
+        <div class="shame-card-scores">
+          <span style="font-family:'Courier New',monospace;font-size:9px;color:#16a34a">T:${a.truth_score}</span>
+          <span style="font-family:'Courier New',monospace;font-size:9px;color:#ea580c">C:${a.clickbait_score}</span>
+          <span style="font-family:'Courier New',monospace;font-size:9px;color:#dc2626">R:${a.ragebait_score}</span>
+          ${wBadge}
+        </div>
+      </div>`;
+    }).join('');
+    return `<div style="margin-bottom:16px">
+      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px">
+        <p class="hall-label" style="margin-bottom:0">Recently detected</p>
+        <span style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;color:#16a34a;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:4px;padding:2px 6px">● LIVE</span>
+      </div>
+      <div class="shame-grid">${cards}</div>
+    </div>`;
+  }
+  // No real data yet — fall back to static examples
+  return renderHallOfVerdicts() + renderHallOfShame();
 }
 
 // ─── PUBLISHER SCORECARDS ─────────────────────────────────────────────────────
@@ -1606,19 +1696,13 @@ function screenInput() {
   return `${errBanner}
   ${renderUploadZone()}
   ${liveAnalysisCount > 0 ? `<p class="count-line"><span class="count-num">${fmtCount(liveAnalysisCount)}</span> articles run through the detector</p>` : ''}
-  ${!hasImages ? renderHallOfVerdicts() : ''}
-  ${!hasImages ? renderHallOfShame() : ''}
+  ${!hasImages ? renderLiveFeed() : ''}
   ${!hasImages ? `<div onclick="openScorecards()" style="background:white;border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px;cursor:pointer;display:flex;align-items:center;justify-content:space-between" onmouseover="this.style.borderColor='#aaa'" onmouseout="this.style.borderColor='var(--border)'">
     <div>
       <p style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1.5px;color:var(--muted);margin-bottom:4px">PUBLISHER SCORECARDS</p>
       <p style="font-size:13px;color:var(--text);line-height:1.4">Which outlets publish the most ragebait?</p>
     </div>
     <span style="font-family:'Courier New',monospace;font-size:14px;color:var(--muted)">→</span>
-  </div>` : ''}
-  ${!hasImages ? `<div class="bookmarklet-section">
-    <p class="bookmarklet-label">DETECT FROM ANY PAGE</p>
-    <p class="bookmarklet-hint">Drag this button to your bookmarks bar. On any article, click it to run BSD instantly — no copy-pasting.</p>
-    <a class="bookmarklet-link" href="javascript:(function(){window.open('https://thescientificoracle.github.io/bullshit-detector/#detect='+encodeURIComponent(location.href),'_blank')})();" onclick="return false;" title="Drag me to your bookmarks bar">⚡ BULLSHIT DETECTOR</a>
   </div>` : ''}
   ${!hasImages ? `<div class="explainer">
     <p class="explainer-label">Three independent scores</p>
@@ -1807,6 +1891,15 @@ function render() {
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
 (function boot() {
+  // Check for ?v=UUID — shareable result link stored in Supabase
+  const vParam = new URLSearchParams(location.search).get('v');
+  if (vParam) {
+    render(); // show input screen briefly while fetching
+    loadRecentResult(vParam);
+    fetchLiveCount();
+    return;
+  }
+
   const hash = location.hash;
   if (hash.startsWith('#r=')) {
     const decoded = decodeResult(hash.slice(3));
@@ -1818,22 +1911,14 @@ function render() {
       if (decoded.sourceUrl) state.url = decoded.sourceUrl;
       pendingVerdictAnimation = true;
     }
-  } else if (hash.startsWith('#detect=')) {
-    // Bookmarklet: auto-detect the URL passed in the hash
-    const url = decodeURIComponent(hash.slice(8));
-    if (url) {
-      state.url = url;
-      history.replaceState(null,'',location.pathname+location.search);
-      render();
-      analyseUrl(url);
-      return;
-    }
   }
   render();
   // Fetch today's live verdicts in background — re-renders home screen when ready
   fetchDailyVerdicts();
   // Fetch real analysis count — replaces fake counter when loaded
   fetchLiveCount();
+  // Fetch recent analyses for live feed
+  fetchRecentAnalyses();
 })();
 </script>
 </body>
