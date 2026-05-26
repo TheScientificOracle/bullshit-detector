@@ -485,31 +485,67 @@ function incrementPersonalCount() {
   } catch {}
 }
 
-// ─── VERDICTS COUNTER ─────────────────────────────────────────────────────────
-const COUNT_BASE = 28419;
-
-function getCount() {
-  try {
-    const stored = parseInt(localStorage.getItem('bsd_count') || '0');
-    if (!stored || stored < COUNT_BASE) {
-      const count = COUNT_BASE + Math.floor(Math.random() * 40);
-      localStorage.setItem('bsd_count', count);
-      return count;
-    }
-    return stored;
-  } catch { return COUNT_BASE; }
-}
-
-function incrementCount() {
-  try {
-    if (sessionStorage.getItem('bsd_sess')) return;
-    const current = getCount();
-    localStorage.setItem('bsd_count', current + Math.floor(Math.random() * 7) + 2);
-    sessionStorage.setItem('bsd_sess', '1');
-  } catch {}
-}
-
+// ─── LIVE COUNTER ─────────────────────────────────────────────────────────────
 function fmtCount(n) { return n.toLocaleString(); }
+
+async function fetchLiveCount() {
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/user_analyses?select=id&limit=1`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Prefer': 'count=exact', 'Range': '0-0' } }
+    );
+    if (!res.ok) return;
+    const cr = res.headers.get('content-range'); // "0-0/1234" or "*/1234"
+    if (cr) {
+      const total = parseInt(cr.split('/')[1] || '0');
+      if (!isNaN(total)) {
+        liveAnalysisCount = total;
+        if (state.screen === 'input') render();
+      }
+    }
+  } catch { /* fail silently */ }
+}
+
+// ─── STORE ANALYSIS ───────────────────────────────────────────────────────────
+async function storeAnalysis(result, analysisType, sourceUrl) {
+  try {
+    let domain = null;
+    if (sourceUrl) {
+      try { domain = new URL(sourceUrl).hostname.replace(/^www\./, ''); } catch {}
+    }
+    await fetch(`${SUPABASE_URL}/rest/v1/user_analyses`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON,
+        'Authorization': `Bearer ${SUPABASE_ANON}`,
+        'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify({
+        source_url:      sourceUrl           || null,
+        domain:          domain              || null,
+        publisher_name:  result.publication  || null,
+        headline:        result.headline     || null,
+        truth_score:     result.scores.truth,
+        clickbait_score: result.scores.clickbait,
+        ragebait_score:  result.scores.ragebait,
+        verdict:         result.verdict      || null,
+        analysis_type:   analysisType,
+        screenshot_mode: result.screenshotMode || false,
+        publish_date:    result.publish_date || null,
+      }),
+    });
+    // Optimistically update local count
+    if (liveAnalysisCount !== null) {
+      liveAnalysisCount++;
+      if (state.screen === 'input') render();
+    }
+    // Invalidate publisher scorecard cache so next visit fetches fresh data
+    if (domain && publisherScorecardsData) {
+      publisherScorecardsData = null;
+    }
+  } catch { /* fire and forget — never block the result */ }
+}
 
 // ─── HALL OF VERDICTS — fallback (shown until live data loads) ────────────────
 const HALL_OF_VERDICTS_FALLBACK = [
@@ -742,6 +778,11 @@ let phaseTimer = null;
 let pendingVerdictAnimation = false;
 let _sharePreviewCache = null;   // cached canvas from generateShareCard
 let _sharePreviewFor   = null;   // which result object it was generated for
+
+// ─── LIVE DATA ────────────────────────────────────────────────────────────────
+let liveAnalysisCount      = null;   // null = not yet loaded; number once fetched
+let publisherScorecardsData = null;  // null = not yet fetched; object once loaded
+let scorecardSortMode      = 'ragebait'; // 'ragebait' | 'truth' | 'clickbait' | 'count'
 
 function setState(patch) {
   Object.assign(state, patch);
@@ -1120,6 +1161,7 @@ async function analyseUrl(url) {
     stopPhases();
     setResultHash(result);
     incrementPersonalCount();
+    storeAnalysis(result, 'url', url); // fire and forget
     pendingVerdictAnimation = true;
     setState({ screen: 'result', result, isDemo: false, openCard: null, isSharedResult: false, shareTab: 'short', copiedBtn: null });
   } catch (err) {
@@ -1142,6 +1184,7 @@ async function analyseScreenshots(images) {
     stopPhases();
     setResultHash(result);
     incrementPersonalCount();
+    storeAnalysis(result, 'screenshot', null); // fire and forget
     pendingVerdictAnimation = true;
     setState({ screen: 'result', result, isDemo: false, openCard: null, isSharedResult: false, shareTab: 'short', copiedBtn: null });
   } catch (err) {
@@ -1296,6 +1339,154 @@ function renderHallOfShame() {
   </div>`;
 }
 
+// ─── PUBLISHER SCORECARDS ─────────────────────────────────────────────────────
+async function fetchPublisherData() {
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/user_analyses?select=domain,publisher_name,truth_score,clickbait_score,ragebait_score&analysis_type=eq.url&domain=not.is.null&limit=2000`,
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` } }
+    );
+    if (!res.ok) return {};
+    const rows = await res.json();
+
+    const grouped = {};
+    for (const row of rows) {
+      if (!row.domain) continue;
+      if (!grouped[row.domain]) grouped[row.domain] = { count: 0, truth: 0, clickbait: 0, ragebait: 0, names: {} };
+      grouped[row.domain].count++;
+      grouped[row.domain].truth     += (row.truth_score     || 0);
+      grouped[row.domain].clickbait += (row.clickbait_score || 0);
+      grouped[row.domain].ragebait  += (row.ragebait_score  || 0);
+      if (row.publisher_name) {
+        grouped[row.domain].names[row.publisher_name] = (grouped[row.domain].names[row.publisher_name] || 0) + 1;
+      }
+    }
+
+    const result = {};
+    for (const [domain, d] of Object.entries(grouped)) {
+      const topName = Object.entries(d.names).sort((a,b) => b[1]-a[1])[0]?.[0] || null;
+      result[domain] = {
+        count: d.count,
+        t: Math.round(d.truth     / d.count),
+        c: Math.round(d.clickbait / d.count),
+        r: Math.round(d.ragebait  / d.count),
+        name: topName,
+      };
+    }
+    return result;
+  } catch { return {}; }
+}
+
+function openScorecards() {
+  setState({ screen: 'scorecards' });
+  if (!publisherScorecardsData) {
+    fetchPublisherData().then(data => {
+      publisherScorecardsData = data;
+      if (state.screen === 'scorecards') render();
+    });
+  }
+}
+
+function setScorecardSort(mode) {
+  scorecardSortMode = mode;
+  render();
+}
+
+function screenScorecards() {
+  if (!publisherScorecardsData) {
+    return `<div class="analysing-wrap">
+      <div class="spinner"></div>
+      <p class="phase-text">Loading publisher data…</p>
+    </div>
+    <button class="btn-back" onclick="resetToInput()">← Back</button>`;
+  }
+
+  const live = publisherScorecardsData;
+
+  // Build merged list: every known publisher (hardcoded profiles + new domains from live data)
+  const allDomains = new Set([...Object.keys(PUBLISHER_PROFILES), ...Object.keys(live)]);
+
+  let entries = Array.from(allDomains).map(domain => {
+    const profile = PUBLISHER_PROFILES[domain];
+    const ld      = live[domain];
+    // Use live averages if we have ≥3 analyses; otherwise use hardcoded profile as estimate
+    if (ld && ld.count >= 3) {
+      return { domain, name: ld.name || (profile && profile.name) || domain, t: ld.t, c: ld.c, r: ld.r, count: ld.count, isReal: true };
+    } else if (profile) {
+      return { domain, name: profile.name, t: profile.t, c: profile.c, r: profile.r, count: ld ? ld.count : 0, isReal: false };
+    } else {
+      // In live data but under threshold — show with real flag anyway
+      return { domain, name: ld.name || domain, t: ld.t, c: ld.c, r: ld.r, count: ld.count, isReal: ld.count >= 1 };
+    }
+  });
+
+  // Sort
+  if (scorecardSortMode === 'ragebait')  entries.sort((a,b) => b.r - a.r);
+  if (scorecardSortMode === 'truth')     entries.sort((a,b) => a.t - b.t);   // worst truth first
+  if (scorecardSortMode === 'clickbait') entries.sort((a,b) => b.c - a.c);
+  if (scorecardSortMode === 'count')     entries.sort((a,b) => b.count - a.count);
+
+  const totalReal    = Object.values(live).reduce((s,d) => s + d.count, 0);
+  const realPubCount = Object.values(live).filter(d => d.count >= 1).length;
+
+  const subtitle = totalReal > 0
+    ? `${fmtCount(totalReal)} real ${totalReal === 1 ? 'analysis' : 'analyses'} across ${realPubCount} publisher${realPubCount !== 1 ? 's' : ''}. Estimated = historical baseline.`
+    : 'Showing historical baselines. Real data accumulates as articles are detected.';
+
+  const sortBtns = ['ragebait','truth','clickbait','count'].map(m => {
+    const active = scorecardSortMode === m;
+    return `<button onclick="setScorecardSort('${m}')" style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:0.8px;padding:4px 10px;border-radius:4px;cursor:pointer;border:1px solid ${active?'#333':'var(--border)'};background:${active?'#111':'transparent'};color:${active?'white':'var(--muted)'}">${m.toUpperCase()}</button>`;
+  }).join('');
+
+  const rows = entries.map(e => {
+    const wl     = getWeaponLabel('ragebait', e.r);
+    const rbCol  = e.r >= 65 ? '#dc2626' : e.r >= 45 ? '#ea580c' : 'var(--muted)';
+    const tCol   = e.t >= 70 ? '#16a34a' : e.t >= 50 ? '#ca8a04' : '#dc2626';
+    const cCol   = e.c >= 65 ? '#dc2626' : e.c >= 45 ? '#ea580c' : 'var(--muted)';
+
+    const countTag = e.isReal && e.count > 0
+      ? `<span style="font-family:'Courier New',monospace;font-size:8px;color:#16a34a;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:3px;padding:1px 5px;white-space:nowrap">${e.count} ${e.count === 1 ? 'analysis' : 'analyses'}</span>`
+      : `<span style="font-family:'Courier New',monospace;font-size:8px;color:var(--muted);letter-spacing:0.3px">ESTIMATED</span>`;
+
+    const weaponTag = (wl && e.r >= 65)
+      ? `<span style="font-family:'Courier New',monospace;font-size:7.5px;font-weight:bold;color:${wl.color};background:${wl.color}15;border:1px solid ${wl.color}40;padding:2px 6px;border-radius:3px;white-space:nowrap">${wl.label}</span>`
+      : '';
+
+    return `<div style="background:white;border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:7px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:9px;gap:8px">
+        <div style="min-width:0">
+          <span style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;font-weight:bold;color:var(--text)">${e.name}</span>
+          <span style="font-family:'Courier New',monospace;font-size:8px;color:var(--muted);margin-left:6px">${e.domain}</span>
+        </div>
+        ${countTag}
+      </div>
+      <div style="display:flex;align-items:center;gap:16px">
+        <div style="display:flex;flex-direction:column;gap:1px">
+          <span style="font-family:'Courier New',monospace;font-size:7px;letter-spacing:1px;color:${tCol}">TRUTH</span>
+          <span style="font-family:'Courier New',monospace;font-size:19px;font-weight:bold;color:${tCol}">${e.t}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:1px">
+          <span style="font-family:'Courier New',monospace;font-size:7px;letter-spacing:1px;color:${cCol}">CLICKBAIT</span>
+          <span style="font-family:'Courier New',monospace;font-size:19px;font-weight:bold;color:${cCol}">${e.c}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:1px">
+          <span style="font-family:'Courier New',monospace;font-size:7px;letter-spacing:1px;color:${rbCol}">RAGEBAIT</span>
+          <span style="font-family:'Courier New',monospace;font-size:19px;font-weight:bold;color:${rbCol}">${e.r}</span>
+        </div>
+        ${weaponTag ? `<div style="margin-left:auto;flex-shrink:0">${weaponTag}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  return `<div style="padding-bottom:8px">
+    <p class="card-label" style="margin-bottom:4px">Publisher Scorecards</p>
+    <p style="font-size:12.5px;color:var(--subtle);line-height:1.55;margin-bottom:14px">${subtitle}</p>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">${sortBtns}</div>
+    ${rows}
+    <button class="btn-back" onclick="resetToInput()">← Back to detector</button>
+  </div>`;
+}
+
 function renderScoreCard(type, result) {
   const score  = result.scores[type];
   const isOpen = state.openCard === type;
@@ -1419,9 +1610,12 @@ function screenInput() {
 
   return `${errBanner}
   ${renderUploadZone()}
-  <p class="count-line">${fmtCount(getCount())} articles detected and counting</p>
+  ${liveAnalysisCount > 0 ? `<p class="count-line"><span class="count-num">${fmtCount(liveAnalysisCount)}</span> articles run through the detector</p>` : ''}
   ${!hasImages ? renderHallOfVerdicts() : ''}
   ${!hasImages ? renderHallOfShame() : ''}
+  ${!hasImages ? `<div style="text-align:center;margin:4px 0 18px">
+    <button onclick="openScorecards()" style="background:none;border:none;font-family:'Courier New',monospace;font-size:10px;letter-spacing:1.2px;color:var(--muted);cursor:pointer;text-decoration:underline;padding:0">VIEW PUBLISHER SCORECARDS →</button>
+  </div>` : ''}
   ${!hasImages ? `<div class="bookmarklet-section">
     <p class="bookmarklet-label">DETECT FROM ANY PAGE</p>
     <p class="bookmarklet-hint">Drag this button to your bookmarks bar. On any article, click it to run BSD instantly — no copy-pasting.</p>
@@ -1601,6 +1795,7 @@ function render() {
   else if (s === 'combined')             content = screenCombined();
   else if (s === 'result')               content = screenResult();
   else if (s === 'error')                content = screenError();
+  else if (s === 'scorecards')           content = screenScorecards();
 
   app.innerHTML = renderMasthead(s !== 'input') + content;
 
@@ -1613,8 +1808,6 @@ function render() {
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
 (function boot() {
-  incrementCount();
-
   const hash = location.hash;
   if (hash.startsWith('#r=')) {
     const decoded = decodeResult(hash.slice(3));
@@ -1640,6 +1833,8 @@ function render() {
   render();
   // Fetch today's live verdicts in background — re-renders home screen when ready
   fetchDailyVerdicts();
+  // Fetch real analysis count — replaces fake counter when loaded
+  fetchLiveCount();
 })();
 </script>
 </body>
