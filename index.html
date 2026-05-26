@@ -655,7 +655,7 @@ function getBand(type, score) {
 
 // ─── RADAR CHART ──────────────────────────────────────────────────────────────
 function renderRadar(scores, screenshotMode) {
-  const cx = 150, cy = 135, r = 90;
+  const cx = 170, cy = 135, r = 90;
   const PI = Math.PI;
   const TRUTH_A = -PI / 2;
   const CB_A    = -PI / 2 + (2 * PI) / 3;
@@ -692,7 +692,7 @@ function renderRadar(scores, screenshotMode) {
   const cbLabel = screenshotMode ? `~${scores.clickbait}` : scores.clickbait;
   const tDash   = screenshotMode ? `<circle cx="${dT.x}"  cy="${dT.y}"  r="13" fill="none" stroke="#16a34a" stroke-width="1" stroke-dasharray="2.5,2" opacity="0.6"/>` : '';
   const cbDash  = screenshotMode ? `<circle cx="${dCB.x}" cy="${dCB.y}" r="13" fill="none" stroke="#ea580c" stroke-width="1" stroke-dasharray="2.5,2" opacity="0.6"/>` : '';
-  const legend  = screenshotMode ? `<text x="150" y="278" text-anchor="middle" font-family="'Courier New',monospace" font-size="7.5" fill="#999" letter-spacing="0.8">~ = INDICATIVE · SCREENSHOT MODE</text>` : '';
+  const legend  = screenshotMode ? `<text x="${cx}" y="278" text-anchor="middle" font-family="'Courier New',monospace" font-size="7.5" fill="#999" letter-spacing="0.8">~ = INDICATIVE · SCREENSHOT MODE</text>` : '';
 
   return `<svg viewBox="0 0 320 285" style="width:100%;max-width:320px;display:block;margin:0 auto">
     ${rings}${axes}
@@ -702,7 +702,7 @@ function renderRadar(scores, screenshotMode) {
     <circle cx="${dRB.x}" cy="${dRB.y}" r="7" fill="white" stroke="#dc2626" stroke-width="2"/><circle cx="${dRB.x}" cy="${dRB.y}" r="3" fill="#dc2626"/>
     <text x="${dT.x}"       y="${dT.y - 16}"  text-anchor="middle" font-family="'Courier New',monospace" font-size="11.5" fill="#16a34a" font-weight="bold">${tLabel}</text>
     <text x="${dCB.x + 15}" y="${dCB.y + 4}"  text-anchor="start"  font-family="'Courier New',monospace" font-size="11.5" fill="#ea580c" font-weight="bold">${cbLabel}</text>
-    <text x="${dRB.x - 15}" y="${dRB.y + 4}"  text-anchor="end"    font-family="'Courier New',monospace" font-size="11.5" fill="#dc2626" font-weight="bold">${scores.ragebait}</text>
+    <text x="${dRB.x}"      y="${dRB.y - 14}" text-anchor="middle" font-family="'Courier New',monospace" font-size="11.5" fill="#dc2626" font-weight="bold">${scores.ragebait}</text>
     <text x="${truthAxis.x}" y="${truthAxis.y - 14}" text-anchor="middle" font-family="'Courier New',monospace" font-size="9.5" fill="#16a34a" font-weight="bold" letter-spacing="1.2">TRUTH</text>
     <text x="${cbAxis.x}"   y="${cbAxis.y + 16}"   text-anchor="middle" font-family="'Courier New',monospace" font-size="9.5" fill="#ea580c" font-weight="bold" letter-spacing="1.2">CLICKBAIT</text>
     <text x="${rbAxis.x}"   y="${rbAxis.y + 16}"   text-anchor="middle" font-family="'Courier New',monospace" font-size="9.5" fill="#dc2626" font-weight="bold" letter-spacing="1.2">RAGEBAIT</text>
