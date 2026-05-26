@@ -1172,7 +1172,7 @@ function confirmScreenshots() { if (state.uploadedImages.length > 0) analyseScre
 // ─── RENDER PIECES ────────────────────────────────────────────────────────────
 function renderMasthead(clickable) {
   return `<div class="masthead">
-    <p class="eyebrow" id="tagline-text">${TAGLINES[state.taglineIndex]}</p>
+    <p class="eyebrow">Screenshot anything. Fact check everything.</p>
     <h1 class="${clickable ? 'clickable' : ''}" onclick="${clickable ? 'resetToInput()' : ''}"
         style="${clickable ? '' : 'cursor:default'}">The Bullshit Detector</h1>
   </div>`;
@@ -1188,7 +1188,7 @@ function renderUploadZone(label) {
         <input type="file" accept="image/*" multiple onchange="handleFileAdd(this)" style="display:none"/>
         <span class="upload-zone-icon">📷</span>
         <span class="upload-zone-title">Upload screenshots to analyse</span>
-        <span class="upload-zone-hint">For best results, upload multiple screenshots of the full article<br>then paste the URL above to verify</span>
+        <span class="upload-zone-hint">Upload multiple screenshots for best results. Full article view works best.</span>
       </label>`;
     }
     return `<label class="upload-label">
@@ -1382,13 +1382,7 @@ function screenInput() {
   const hasImages = state.uploadedImages.length > 0;
 
   return `${errBanner}
-  <div class="url-row">
-    <input class="url-input" type="url" placeholder="Paste a URL to analyse…" value="${state.url.replace(/"/g,'&quot;')}"
-      oninput="state.url=this.value" onkeydown="if(event.key==='Enter')handleSubmit()"/>
-    <button class="detect-btn" onclick="handleSubmit()">DETECT</button>
-  </div>
-  <div class="or-divider"><span class="or-text">OR</span></div>
-  ${hasImages ? renderUploadZone('Upload a screenshot instead') : renderUploadZone()}
+  ${renderUploadZone()}
   <p class="count-line">${fmtCount(getCount())} articles detected and counting</p>
   ${!hasImages ? renderHallOfVerdicts() : ''}
   ${!hasImages ? renderHallOfShame() : ''}
@@ -1607,8 +1601,6 @@ function render() {
     }
   }
   render();
-  // Start tagline cycle after DOM is painted
-  requestAnimationFrame(() => startTaglineCycle());
   // Fetch today's live verdicts in background — re-renders home screen when ready
   fetchDailyVerdicts();
 })();
