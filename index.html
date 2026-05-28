@@ -551,15 +551,21 @@ async function storeAnalysis(result, analysisType, sourceUrl) {
     if (sourceUrl) {
       try { domain = new URL(sourceUrl).hostname.replace(/^www\./, ''); } catch {}
     }
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/user_analyses`, {
+    // Generate UUID client-side — no need for return=representation, works immediately
+    const uuid = crypto.randomUUID();
+    currentShareUuid = uuid;
+    history.replaceState(null, '', `?v=${uuid}`);
+
+    await fetch(`${SUPABASE_URL}/rest/v1/user_analyses`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'apikey': SUPABASE_ANON,
         'Authorization': `Bearer ${SUPABASE_ANON}`,
-        'Prefer': 'return=representation',
+        'Prefer': 'return=minimal',
       },
       body: JSON.stringify({
+        id:              uuid,
         source_url:      sourceUrl           || null,
         domain:          domain              || null,
         publisher_name:  result.publication  || null,
@@ -573,16 +579,6 @@ async function storeAnalysis(result, analysisType, sourceUrl) {
         publish_date:    result.publish_date || null,
       }),
     });
-    if (res.ok) {
-      try {
-        const rows = await res.json();
-        if (rows && rows[0] && rows[0].id) {
-          currentShareUuid = rows[0].id;
-          // Update URL so sharing and copy-link use the real result URL
-          history.replaceState(null, '', `?v=${currentShareUuid}`);
-        }
-      } catch {}
-    }
     // Optimistically update local count
     if (liveAnalysisCount !== null) {
       liveAnalysisCount++;
@@ -947,11 +943,6 @@ async function shareResult() {
   const r = state.result;
   if (!r) return;
 
-  // If UUID hasn't arrived yet, wait for storeAnalysis to complete (usually < 1s)
-  if (!currentShareUuid && _storeAnalysisPromise) {
-    try { await _storeAnalysisPromise; } catch {}
-  }
-
   const msg = buildShareMsg(r);
   const shareUrl = currentShareUuid
     ? `https://thescientificoracle.github.io/bullshit-detector/?v=${currentShareUuid}`
@@ -1148,11 +1139,6 @@ function copyShareLink() {
 async function copyComment() {
   const r = state.result;
   if (!r) return;
-
-  // Wait for UUID if still in flight
-  if (!currentShareUuid && _storeAnalysisPromise) {
-    try { await _storeAnalysisPromise; } catch {}
-  }
 
   const url = currentShareUuid
     ? `https://thescientificoracle.github.io/bullshit-detector/?v=${currentShareUuid}`
