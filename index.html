@@ -922,32 +922,59 @@ function clearHash() {
 }
 
 // ─── SHARE HELPERS ────────────────────────────────────────────────────────────
-function getShareMessage() {
-  const r      = state.result;
+function buildShareMsg(r) {
   const weapon = getBiggestWeaponLabel(r.scores);
-  const sc     = `Truth ${r.scores.truth} · Clickbait ${r.scores.clickbait} · Ragebait ${r.scores.ragebait}`;
-  const footer = currentShareUuid
-    ? `thescientificoracle.github.io/bullshit-detector/?v=${currentShareUuid}`
-    : `thescientificoracle.github.io/bullshit-detector/`;
-  const hook   = weapon === 'WEAPONS GRADE'
-    ? `I just ran this through the bullshit detector. WEAPONS GRADE ragebait.`
-    : `I just ran this through the bullshit detector and it stinks!`;
+  const { truth, clickbait, ragebait } = r.scores;
 
-  if (state.shareTab === 'full' && r.headline) {
-    const hl  = r.headline.length > 72 ? r.headline.slice(0, 69) + '…' : r.headline;
-    const pub = r.publication ? ` (${r.publication})` : '';
-    return `${hook}\n\nOn "${hl}"${pub}:\n${sc}\n\n"${r.verdict}"\n\n${footer}`;
-  }
-  return `${hook}\n\n${sc}\n\n"${r.verdict}"\n\n${footer}`;
+  let hook;
+  if      (weapon === 'WEAPONS GRADE')       hook = 'This is WEAPONS GRADE ragebait.';
+  else if (weapon === 'ENGINEERED OUTRAGE')  hook = 'ENGINEERED OUTRAGE. Here\'s the receipt.';
+  else if (weapon === 'PURE CLICKBAIT')      hook = 'This is PURE CLICKBAIT.';
+  else if (truth >= 80 && ragebait <= 20)    hook = 'Actually solid journalism. Rare.';
+  else if (truth <= 20)                      hook = 'Zero evidence. The Bullshit Detector found nothing.';
+  else                                       hook = 'I ran this through the Bullshit Detector.';
+
+  const scores = weapon
+    ? `Ragebait: ${ragebait} — ${weapon}\nTruth: ${truth} · Clickbait: ${clickbait}`
+    : `Truth: ${truth} · Clickbait: ${clickbait} · Ragebait: ${ragebait}`;
+
+  const verdict = r.verdict ? `\n"${r.verdict}"` : '';
+  return `${hook}\n\n${scores}${verdict}`;
 }
 
-function switchShareTab(tab) { setState({ shareTab: tab }); }
+async function shareResult() {
+  const r = state.result;
+  if (!r) return;
 
-function copyShareMsg() {
-  const msg = getShareMessage();
-  navigator.clipboard.writeText(msg)
-    .then(() => { setState({ copiedBtn: 'msg' }); setTimeout(() => setState({ copiedBtn: null }), 2200); })
-    .catch(() => { prompt('Copy this message:', msg); });
+  const msg = buildShareMsg(r);
+  const shareUrl = currentShareUuid
+    ? `https://thescientificoracle.github.io/bullshit-detector/?v=${currentShareUuid}`
+    : `https://thescientificoracle.github.io/bullshit-detector/`;
+  const fullText = msg + '\n\n→ ' + shareUrl;
+
+  let card;
+  try { card = (_sharePreviewFor === r && _sharePreviewCache) ? _sharePreviewCache : await generateShareCard(r); }
+  catch { return; }
+
+  try {
+    const blob = await new Promise(res => card.toBlob(res, 'image/png'));
+    const file = new File([blob], 'bsd-result.png', { type: 'image/png' });
+
+    // Mobile: native share sheet handles WhatsApp, LinkedIn, iMessage, Twitter etc. in one tap
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], text: fullText });
+      return;
+    }
+
+    // Desktop: download image + copy full message to clipboard simultaneously
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'bullshit-detector-result.png';
+    a.click();
+    try { await navigator.clipboard.writeText(fullText); } catch {}
+    setState({ copiedBtn: 'share' });
+    setTimeout(() => setState({ copiedBtn: null }), 3000);
+  } catch { /* user cancelled — silent */ }
 }
 // ─── SHARE CARD (canvas) ──────────────────────────────────────────────────────
 function drawRadarCard(ctx, cx, cy, r, scores) {
@@ -1099,34 +1126,10 @@ async function generateShareCard(result) {
   return canvas;
 }
 
-async function shareWhatsapp() {
-  const msg = getShareMessage();
-  try {
-    const canvas = await generateShareCard(state.result);
-    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
-    const file = new File([blob], 'bsd-verdict.png', { type:'image/png' });
-    if (navigator.share && navigator.canShare && navigator.canShare({ files:[file] })) {
-      await navigator.share({ files:[file], text: msg }); return;
-    }
-    // Desktop fallback: download the image, then open WhatsApp
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-    a.download = 'bsd-verdict.png'; a.click();
-  } catch(e) { /* fall through */ }
-  window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(msg), '_blank');
-}
-
-async function saveShareImage() {
-  const canvas = await generateShareCard(state.result);
-  const a = document.createElement('a'); a.href = canvas.toDataURL('image/png');
-  a.download = 'bsd-verdict.png'; a.click();
-}
-function shareX() {
-  const r = state.result;
-  const sc = `Truth ${r.scores.truth} · Clickbait ${r.scores.clickbait} · Ragebait ${r.scores.ragebait}`;
-  const text = `I just ran this through the bullshit detector and it stinks!\n\n${sc}\n\n"${r.verdict}"`;
-  const url  = location.href;
-  window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
-}
+// Legacy aliases — all route through shareResult() now
+async function shareWhatsapp() { shareResult(); }
+async function saveShareImage() { shareResult(); }
+function shareX() { shareResult(); }
 function copyShareLink() {
   const url = currentShareUuid
     ? `https://thescientificoracle.github.io/bullshit-detector/?v=${currentShareUuid}`
@@ -1644,48 +1647,16 @@ function renderClaimChecks(r) {
 }
 
 function renderShareSection(r) {
-  const hasHL  = !!(r.headline);
-  const isShort = state.shareTab === 'short';
-  const sc  = `Truth ${r.scores.truth} · Clickbait ${r.scores.clickbait} · Ragebait ${r.scores.ragebait}`;
-  const footer = `thescientificoracle.github.io/bullshit-detector/`;
-
-  let msgText;
-  if (!isShort && hasHL) {
-    const hl  = r.headline.length > 72 ? r.headline.slice(0, 69) + '…' : r.headline;
-    const pub = r.publication ? ` (${r.publication})` : '';
-    msgText = `I just ran this through the bullshit detector and it stinks!\n\nOn "${hl}"${pub}:\n${sc}\n\n"${r.verdict}"\n\n${footer}`;
-  } else {
-    msgText = `I just ran this through the bullshit detector and it stinks!\n\n${sc}\n\n"${r.verdict}"\n\n${footer}`;
-  }
-
-  const msgDisplay = msgText
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/thescientificoracle\.github\.io\/bullshit-detector\//, '<span class="msg-cta-line">thescientificoracle.github.io/bullshit-detector/</span>');
-
-  const tabs = hasHL ? `<div class="share-tabs">
-    <button class="share-tab ${isShort ? 'active' : ''}" onclick="switchShareTab('short')">SHORT</button>
-    <button class="share-tab ${!isShort ? 'active' : ''}" onclick="switchShareTab('full')">WITH HEADLINE</button>
-  </div>` : '';
-
-  const copyLabel = state.copiedBtn === 'msg'  ? 'COPIED ✓' : 'COPY MESSAGE';
-  const copyStyle = state.copiedBtn === 'msg'  ? 'class="btn-primary success"' : 'class="btn-primary"';
-  const linkLabel = state.copiedBtn === 'link' ? 'COPIED ✓' : 'COPY LINK';
-  const linkClass = state.copiedBtn === 'link' ? 'share-btn-sm btn-cl success' : 'share-btn-sm btn-cl';
+  const shareLabel = state.copiedBtn === 'share' ? 'IMAGE SAVED + MESSAGE COPIED ✓' : 'SHARE RESULT';
+  const shareStyle = state.copiedBtn === 'share' ? 'btn-primary success' : 'btn-primary';
+  const linkLabel  = state.copiedBtn === 'link'  ? 'COPIED ✓' : 'COPY LINK';
+  const linkClass  = state.copiedBtn === 'link'  ? 'btn-cl success' : 'btn-cl';
 
   return `<div class="share-wrap">
     <p class="card-label" style="margin-bottom:10px">Send this result</p>
-    <canvas id="share-preview-canvas" style="width:100%;border-radius:6px;display:block;margin-bottom:12px;background:#f5f0eb"></canvas>
-    ${tabs}
-    <div class="msg-preview"><p class="msg-preview-text">${msgDisplay}</p></div>
-    <button ${copyStyle} onclick="copyShareMsg()">${copyLabel}</button>
-    <div class="share-btn-row">
-      <button class="share-btn-sm btn-wa" onclick="shareWhatsapp()">WHATSAPP</button>
-      <button class="share-btn-sm btn-x"  onclick="shareX()">X / TWITTER</button>
-      <button class="${linkClass}" onclick="copyShareLink()">${linkLabel}</button>
-    </div>
-    <div class="share-btn-row" style="margin-top:0">
-      <button class="share-btn-sm btn-img" style="flex:none;width:100%" onclick="saveShareImage()">SAVE IMAGE</button>
-    </div>
+    <canvas id="share-preview-canvas" style="width:100%;border-radius:6px;display:block;margin-bottom:12px;background:#f5f0eb;cursor:pointer" onclick="shareResult()" title="Tap to share"></canvas>
+    <button class="${shareStyle}" onclick="shareResult()" style="margin-bottom:8px">${shareLabel}</button>
+    <button class="share-btn-sm ${linkClass}" style="width:100%;padding:10px 6px" onclick="copyShareLink()">${linkLabel}</button>
   </div>`;
 }
 
@@ -1829,12 +1800,13 @@ function screenResult() {
   // Technique labels
   const techniquesHtml = (!state.isDemo) ? renderTechniques(r) : '';
 
+  const sharedWeapon = getBiggestWeaponLabel(r.scores);
   const sharedIntro = state.isSharedResult
     ? `<div class="shared-intro">
-        <p class="shared-intro-label">SOMEONE SHARED THIS WITH YOU</p>
-        <p class="shared-intro-heading">The Bullshit Detector just called this out.</p>
-        <p class="shared-intro-sub">Paste any news article or upload screenshots — get an instant verdict on truth, clickbait, and ragebait. No spin. No agenda. Just the signal.<br><br>${personalLine}</p>
-        <button class="btn-try" onclick="resetToInput()">TRY IT ON ANY ARTICLE →</button>
+        <p class="shared-intro-label">SOMEONE RAN THIS THROUGH THE BULLSHIT DETECTOR</p>
+        <p class="shared-intro-heading" style="font-size:22px;letter-spacing:-0.5px">${sharedWeapon ? sharedWeapon : `Ragebait: ${r.scores.ragebait}`}</p>
+        <p class="shared-intro-sub">See their verdict below. Then run the article they sent you and find out if they're right.</p>
+        <button class="btn-try" onclick="resetToInput()">PROVE THEM WRONG →</button>
       </div>` : '';
 
   return `${sharedIntro}${demoBanner}${ssBanner}${ageWarning}
@@ -1858,7 +1830,7 @@ function screenResult() {
   ${renderClaimChecks(r)}
   ${rerunBox}
   ${renderShareSection(r)}
-  <button class="btn-secondary" onclick="resetToInput()">ANALYSE ANOTHER</button>`;
+  <button class="btn-secondary" onclick="resetToInput()">${state.isSharedResult ? 'PROVE THEM WRONG — UPLOAD YOUR SCREENSHOT' : 'ANALYSE ANOTHER'}</button>`;
 }
 
 function screenError() {
