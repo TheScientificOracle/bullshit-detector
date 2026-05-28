@@ -1144,6 +1144,35 @@ function copyShareLink() {
     .then(() => { setState({ copiedBtn: 'link' }); setTimeout(() => setState({ copiedBtn: null }), 2200); })
     .catch(() => { prompt('Copy this link:', url); });
 }
+
+async function copyComment() {
+  const r = state.result;
+  if (!r) return;
+
+  // Wait for UUID if still in flight
+  if (!currentShareUuid && _storeAnalysisPromise) {
+    try { await _storeAnalysisPromise; } catch {}
+  }
+
+  const url = currentShareUuid
+    ? `https://thescientificoracle.github.io/bullshit-detector/?v=${currentShareUuid}`
+    : `https://thescientificoracle.github.io/bullshit-detector/`;
+
+  const weapon = getBiggestWeaponLabel(r.scores);
+  const { truth, clickbait, ragebait } = r.scores;
+
+  // Tight copy for dropping as a comment — reply tone, no "I just ran..."
+  const scoreLine = weapon
+    ? `Ragebait: ${ragebait} — ${weapon}. Truth: ${truth}.`
+    : `Truth: ${truth} · Clickbait: ${clickbait} · Ragebait: ${ragebait}.`;
+
+  const verdict = r.verdict ? `\n"${r.verdict}"` : '';
+  const comment = `Ran this through the Bullshit Detector.\n\n${scoreLine}${verdict}\n\n→ ${url}`;
+
+  navigator.clipboard.writeText(comment)
+    .then(() => { setState({ copiedBtn: 'comment' }); setTimeout(() => setState({ copiedBtn: null }), 2500); })
+    .catch(() => { prompt('Copy this comment:', comment); });
+}
 function rerunShared() {
   if (state.result && state.result.sourceUrl) {
     state.url = state.result.sourceUrl;
@@ -1655,15 +1684,18 @@ function renderClaimChecks(r) {
 }
 
 function renderShareSection(r) {
-  const shareLabel = state.copiedBtn === 'share' ? 'IMAGE SAVED + MESSAGE COPIED ✓' : 'SHARE RESULT';
-  const shareStyle = state.copiedBtn === 'share' ? 'btn-primary success' : 'btn-primary';
-  const linkLabel  = state.copiedBtn === 'link'  ? 'COPIED ✓' : 'COPY LINK';
-  const linkClass  = state.copiedBtn === 'link'  ? 'btn-cl success' : 'btn-cl';
+  const shareLabel   = state.copiedBtn === 'share'   ? 'IMAGE SAVED + MESSAGE COPIED ✓' : 'SHARE RESULT';
+  const shareStyle   = state.copiedBtn === 'share'   ? 'btn-primary success' : 'btn-primary';
+  const commentLabel = state.copiedBtn === 'comment' ? 'COPIED ✓ — PASTE AS COMMENT'    : 'COPY COMMENT';
+  const commentClass = state.copiedBtn === 'comment' ? 'btn-cl success' : 'btn-cl';
+  const linkLabel    = state.copiedBtn === 'link'    ? 'COPIED ✓' : 'COPY LINK';
+  const linkClass    = state.copiedBtn === 'link'    ? 'btn-cl success' : 'btn-cl';
 
   return `<div class="share-wrap">
     <p class="card-label" style="margin-bottom:10px">Send this result</p>
     <canvas id="share-preview-canvas" style="width:100%;border-radius:6px;display:block;margin-bottom:12px;background:#f5f0eb;cursor:pointer" onclick="shareResult()" title="Tap to share"></canvas>
     <button class="${shareStyle}" onclick="shareResult()" style="margin-bottom:8px">${shareLabel}</button>
+    <button class="share-btn-sm ${commentClass}" style="width:100%;padding:10px 6px;margin-bottom:6px" onclick="copyComment()">${commentLabel}</button>
     <button class="share-btn-sm ${linkClass}" style="width:100%;padding:10px 6px" onclick="copyShareLink()">${linkLabel}</button>
   </div>`;
 }
