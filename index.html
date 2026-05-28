@@ -835,6 +835,7 @@ let publisherScorecardsData = null;  // null = not yet fetched; object once load
 let scorecardSortMode      = 'ragebait'; // 'ragebait' | 'truth' | 'clickbait' | 'count'
 let recentAnalyses         = null;   // null = not yet loaded; array of last 6 rows
 let currentShareUuid       = null;   // UUID from Supabase after a successful analysis
+let _storeAnalysisPromise  = null;   // in-flight storeAnalysis promise — awaited by shareResult() if UUID not yet set
 
 function setState(patch) {
   Object.assign(state, patch);
@@ -945,6 +946,11 @@ function buildShareMsg(r) {
 async function shareResult() {
   const r = state.result;
   if (!r) return;
+
+  // If UUID hasn't arrived yet, wait for storeAnalysis to complete (usually < 1s)
+  if (!currentShareUuid && _storeAnalysisPromise) {
+    try { await _storeAnalysisPromise; } catch {}
+  }
 
   const msg = buildShareMsg(r);
   const shareUrl = currentShareUuid
@@ -1213,7 +1219,8 @@ async function analyseUrl(url) {
     stopPhases();
     setResultHash(result);
     incrementPersonalCount();
-    storeAnalysis(result, 'url', url); // fire and forget
+    currentShareUuid = null; // clear any UUID from previous analysis
+    _storeAnalysisPromise = storeAnalysis(result, 'url', url); // fire and forget but keep ref
     pendingVerdictAnimation = true;
     setState({ screen: 'result', result, isDemo: false, openCard: null, isSharedResult: false, shareTab: 'short', copiedBtn: null });
   } catch (err) {
@@ -1236,7 +1243,8 @@ async function analyseScreenshots(images) {
     stopPhases();
     setResultHash(result);
     incrementPersonalCount();
-    storeAnalysis(result, 'screenshot', null); // fire and forget
+    currentShareUuid = null; // clear any UUID from previous analysis
+    _storeAnalysisPromise = storeAnalysis(result, 'screenshot', null); // fire and forget but keep ref
     pendingVerdictAnimation = true;
     setState({ screen: 'result', result, isDemo: false, openCard: null, isSharedResult: false, shareTab: 'short', copiedBtn: null });
   } catch (err) {
