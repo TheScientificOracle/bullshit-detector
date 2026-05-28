@@ -1624,7 +1624,9 @@ function renderClaimChecks(r) {
     const meta = VERDICT_META[v] || VERDICT_META.unverifiable;
     const sourceHtml = cc.source_url
       ? `<a class="claim-source-link" href="${cc.source_url}" target="_blank" rel="noopener">Source: ${cc.source || cc.source_url} ↗</a>`
-      : `<span class="claim-internal-note">Claude knowledge · ${cc.confidence || 'medium'} confidence${cc.verified_by_search ? '' : ' · no fact-check found'}</span>`;
+      : (cc.confidence === 'high' || cc.confidence === 'medium')
+        ? `<span class="claim-internal-note">Claude knowledge · ${cc.confidence} confidence</span>`
+        : `<span class="claim-internal-note">Claude knowledge · low confidence · no external source found</span>`;
 
     return `<div class="claim-check-card">
       <div class="claim-verdict-row">
