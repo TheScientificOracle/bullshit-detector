@@ -776,7 +776,7 @@ function renderRadar(scores, screenshotMode) {
   const cbDash  = screenshotMode ? `<circle cx="${dCB.x}" cy="${dCB.y}" r="13" fill="none" stroke="#ea580c" stroke-width="1" stroke-dasharray="2.5,2" opacity="0.6"/>` : '';
   const legend  = screenshotMode ? `<text x="${cx}" y="278" text-anchor="middle" font-family="'Courier New',monospace" font-size="7.5" fill="#999" letter-spacing="0.8">~ = INDICATIVE · SCREENSHOT MODE</text>` : '';
 
-  return `<svg viewBox="0 0 320 285" style="width:100%;max-width:320px;display:block;margin:0 auto">
+  return `<svg viewBox="0 -10 320 295" style="width:100%;max-width:320px;display:block;margin:0 auto">
     ${rings}${axes}
     <polygon points="${dT.x},${dT.y} ${dCB.x},${dCB.y} ${dRB.x},${dRB.y}" fill="rgba(30,20,10,0.10)" stroke="#444" stroke-width="2" stroke-linejoin="round"/>
     ${tDash}<circle cx="${dT.x}"  cy="${dT.y}"  r="7" fill="white" stroke="#16a34a" stroke-width="2"/><circle cx="${dT.x}"  cy="${dT.y}"  r="3" fill="#16a34a"/>
@@ -785,7 +785,7 @@ function renderRadar(scores, screenshotMode) {
     <text x="${dT.x}"       y="${dT.y - 16}"  text-anchor="middle" font-family="'Courier New',monospace" font-size="11.5" fill="#16a34a" font-weight="bold">${tLabel}</text>
     <text x="${dCB.x + 15}" y="${dCB.y + 4}"  text-anchor="start"  font-family="'Courier New',monospace" font-size="11.5" fill="#ea580c" font-weight="bold">${cbLabel}</text>
     <text x="${dRB.x}"      y="${dRB.y - 14}" text-anchor="middle" font-family="'Courier New',monospace" font-size="11.5" fill="#dc2626" font-weight="bold">${scores.ragebait}</text>
-    <text x="${truthAxis.x}" y="${truthAxis.y - 14}" text-anchor="middle" font-family="'Courier New',monospace" font-size="9.5" fill="#16a34a" font-weight="bold" letter-spacing="1.2">TRUTH</text>
+    <text x="${truthAxis.x}" y="${truthAxis.y - 26}" text-anchor="middle" font-family="'Courier New',monospace" font-size="9.5" fill="#16a34a" font-weight="bold" letter-spacing="1.2">TRUTH</text>
     <text x="${cbAxis.x}"   y="${cbAxis.y + 16}"   text-anchor="middle" font-family="'Courier New',monospace" font-size="9.5" fill="#ea580c" font-weight="bold" letter-spacing="1.2">CLICKBAIT</text>
     <text x="${rbAxis.x}"   y="${rbAxis.y + 16}"   text-anchor="middle" font-family="'Courier New',monospace" font-size="9.5" fill="#dc2626" font-weight="bold" letter-spacing="1.2">RAGEBAIT</text>
     ${(()=>{
@@ -795,7 +795,7 @@ function renderRadar(scores, screenshotMode) {
       let stamps = '';
       if (wlRB) stamps += `<text x="${rbAxis.x}" y="${rbAxis.y + 27}" text-anchor="middle" font-family="'Courier New',monospace" font-size="7.5" fill="${wlRB.color}" font-weight="bold" letter-spacing="0.8">${wlRB.label}</text>`;
       if (wlCB) stamps += `<text x="${cbAxis.x}" y="${cbAxis.y + 27}" text-anchor="middle" font-family="'Courier New',monospace" font-size="7.5" fill="${wlCB.color}" font-weight="bold" letter-spacing="0.8">${wlCB.label}</text>`;
-      if (wlT)  stamps += `<text x="${truthAxis.x}" y="${truthAxis.y - 24}" text-anchor="middle" font-family="'Courier New',monospace" font-size="7.5" fill="${wlT.color}" font-weight="bold" letter-spacing="0.8">${wlT.label}</text>`;
+      if (wlT)  stamps += `<text x="${truthAxis.x}" y="${truthAxis.y - 36}" text-anchor="middle" font-family="'Courier New',monospace" font-size="7.5" fill="${wlT.color}" font-weight="bold" letter-spacing="0.8">${wlT.label}</text>`;
       return stamps;
     })()}
     ${legend}
